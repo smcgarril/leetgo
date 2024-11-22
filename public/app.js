@@ -11,34 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// // Function to fetch problems from the backend
-// async function fetchProblems() {
-//     try {
-//         const response = await fetch('/problems'); // Fetch problems from the Go backend (same origin)
-//         if (!response.ok) {
-//             throw new Error("Failed to fetch problems");
-//         }
-
-//         const problems = await response.json(); // Parse the JSON data
-//         renderProblems(problems); // Pass the problems to the render function
-//     } catch (error) {
-//         console.error('Error fetching problems:', error);
-//     }
-// }
-
-// // Function to render the fetched problems in the DOM
-// function renderProblems(problems) {
-//     const problemsDiv = document.getElementById('problems');
-//     problemsDiv.innerHTML = ''; // Clear previous problems (if any)
-
-//     problems.forEach(problem => {
-//         // Create a button for each problem
-//         const button = document.createElement('button');
-//         button.innerText = problem.title;
-//         button.onclick = () => alert(problem.description); // Display description on button click
-//         problemsDiv.appendChild(button);
-//     });
-// }
 
 // Function to fetch problems from the backend
 async function fetchProblems() {
@@ -114,14 +86,8 @@ async function runCode() {
             throw new Error('Failed to execute code');
         }
 
-        // Parse JSON response
-        // const data = await response.json(); 
-
         const rawText = await response.text();
-        console.log('Raw response text:', rawText);
         const data = JSON.parse(rawText);
-        console.log('Manually parsed data:', data);
-        console.log('Response data:', data); // Debugging: Log the response to verify its structure
 
         // Check if `data.output` exists and render it
         if (data.output) {
