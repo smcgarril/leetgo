@@ -1,16 +1,5 @@
 let editor;
-
-document.addEventListener("DOMContentLoaded", function () {
-    fetchProblems(); // Fetch problems when the page is loaded
-
-    // Initialize CodeMirror editor for the user to input code
-    editor = CodeMirror(document.getElementById('editor'), {
-        mode: 'javascript',
-        lineNumbers: true,
-        theme: 'default',
-    });
-});
-
+let currentProblem = null; // Store the selected problem's metadata
 
 // Function to fetch problems from the backend
 async function fetchProblems() {
@@ -56,30 +45,46 @@ function renderProblems(problems) {
     problemsDiv.appendChild(select);
 }
 
-// Function to display the selected problem's description
 function displayProblemDescription(problems) {
     const select = document.getElementById('problem-select');
     const selectedProblemId = select.value;
 
-    const problem = problems.find(p => p.id === selectedProblemId); // Find the selected problem
+    currentProblem = problems.find(p => p.id === selectedProblemId); // Find the selected problem
+
     const descriptionDiv = document.getElementById('problem-description');
-    if (problem) {
-        descriptionDiv.innerHTML = `<h3>${problem.title}</h3><p>${problem.description}</p>`;
+    if (currentProblem) {
+        descriptionDiv.innerHTML = `<h3>${currentProblem.title}</h3><p>${currentProblem.description}</p>`;
     } else {
         descriptionDiv.innerHTML = '';
     }
 }
 
-// Call fetchProblems when the page loads
-fetchProblems();
-
 async function runCode() {
+    if (!currentProblem) {
+        alert("Please select a problem first.");
+        return;
+    }
+
     const code = editor.getValue(); // Get the code from the editor
+    const testInput = currentProblem.test_input;
+    const problem = currentProblem.function_name;
+    const expected = currentProblem.expected;
     try {
+
+        const payload = {
+            code: code,           // Your editor content
+            test_input: testInput, // Input for testing
+            problem: problem,      // Type of problem
+            expected: expected     // Expected output
+        };
+
+        console.log(payload);
+        console.log(JSON.stringify({ payload }));
+
         const response = await fetch('/execute', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code }), // Send the code to the backend
+            body: JSON.stringify(payload), // Send the code to the backend
         });
 
         if (!response.ok) {
@@ -100,3 +105,17 @@ async function runCode() {
         document.getElementById('output').innerText = 'Error running code: ' + error.message;
     }
 }
+
+// Call fetchProblems when the page loads
+fetchProblems();
+
+document.addEventListener("DOMContentLoaded", function () {
+    fetchProblems(); // Fetch problems when the page is loaded
+
+    // Initialize CodeMirror editor for the user to input code
+    editor = CodeMirror(document.getElementById('editor'), {
+        mode: 'javascript',
+        lineNumbers: true,
+        theme: 'default',
+    });
+});

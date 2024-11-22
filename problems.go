@@ -2,28 +2,45 @@ package main
 
 // Problem represents a LeetCode-style problem
 type Problem struct {
-	ID          string                                  `json:"id"`
-	Title       string                                  `json:"title"`
-	Description string                                  `json:"description"`
-	Example     string                                  `json:"example"`
-	Solution    func(inputs ...interface{}) interface{} `json:"-"` // Ignore this field during JSON marshaling
+	ID           string                                  `json:"id"`
+	Title        string                                  `json:"title"`
+	Description  string                                  `json:"description"`
+	Example      string                                  `json:"example"`
+	FunctionName string                                  `json:"function_name"`
+	TestInput    string                                  `json:"test_input"`
+	Expected     string                                  `json:"expected"`
+	Solution     func(inputs ...interface{}) interface{} `json:"-"` // Ignore this field during JSON marshaling
+}
+
+// CodeReqeuest represents a user generated code snippet with test validation
+type CodeRequest struct {
+	Code      string `json:"code"`
+	TestInput string `json:"test_input"`
+	Problem   string `json:"problem"`
+	Expected  string `json:"expected"`
 }
 
 // A list of sample problems
 var Problems = []Problem{
 	{
-		ID:          "1",
-		Title:       "Two Sum",
-		Description: "Given two integers, return their sum.",
-		Example:     "Input: 1, 2 | Output: 3",
-		Solution:    Sum, // Reference the solution function here
+		ID:           "1",
+		Title:        "Add 4",
+		Description:  "Given one integer, add 4",
+		Example:      "Input: 1, 2 | Output: 3",
+		FunctionName: "sum",
+		TestInput:    "1",
+		Expected:     "5",
+		Solution:     Sum, // Reference the solution function here
 	},
 	{
-		ID:          "2",
-		Title:       "Palidrome",
-		Description: "Given a string, return whether or not it is a palindrome.",
-		Example:     "Input: bob | Output: true",
-		Solution:    IsPalindrome, // Reference the solution function here
+		ID:           "2",
+		Title:        "Palidrome",
+		Description:  "Given a string, return whether or not it is a palindrome.",
+		Example:      "Input: bob | Output: true",
+		FunctionName: "palindrome",
+		TestInput:    "bob",
+		Expected:     "true",
+		Solution:     IsPalindrome, // Reference the solution function here
 	},
 	// You can add more problems here as needed
 }

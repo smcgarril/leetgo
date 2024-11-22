@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,18 +21,59 @@ func getProblems(w http.ResponseWriter, r *http.Request) {
 
 func executeCode(w http.ResponseWriter, r *http.Request) {
 	// Decode the user-submitted code from the request body
-	var codeRequest struct {
-		Code string `json:"code"`
+	var codeRequest CodeRequest
+
+	// Read the body into a byte slice
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, `{"error":"Failed to read request body"}`, http.StatusInternalServerError)
+		return
 	}
-	err := json.NewDecoder(r.Body).Decode(&codeRequest)
+
+	// Log the raw request body
+	log.Printf("Raw request body: %s", string(bodyBytes))
+
+	err = json.Unmarshal(bodyBytes, &codeRequest)
 	if err != nil {
 		http.Error(w, `{"error":"Invalid request"}`, http.StatusBadRequest)
 		return
 	}
 
+	// Log the decoded payload
+	log.Printf("Decoded request: %+v", codeRequest)
+
+	// Test Harness Template
+	harness := `
+	package main
+	import (
+		"fmt"
+	)
+
+	// User's function
+	%s
+
+	func main() {
+
+		// Test input
+		input := "%s"
+
+		// Call the user's function and check the output
+		output := %s(input) 
+		expected := %s
+
+		if fmt.Sprint(output) == fmt.Sprint(expected) {
+			fmt.Println("PASSED")
+		} else {
+			fmt.Printf("FAILED: Got %%v, Expected %%v\n", output, expected)
+		}
+	}`
+
+	// Wrap the submitted code in the test harness
+	code := fmt.Sprintf(harness, codeRequest.Code, codeRequest.TestInput, codeRequest.Problem, codeRequest.Expected)
+
 	// Save the submitted code to a temporary file
 	codeFile := "temp_code.go"
-	code := `package main; import "fmt"; func main() { ` + codeRequest.Code + ` }`
+
 	err = os.WriteFile(codeFile, []byte(code), 0644)
 	if err != nil {
 		http.Error(w, `{"error":"Failed to save code"}`, http.StatusInternalServerError)
@@ -41,6 +83,12 @@ func executeCode(w http.ResponseWriter, r *http.Request) {
 	// Execute the Go code
 	cmd := exec.Command("go", "run", codeFile)
 	output, err := cmd.CombinedOutput()
+
+	// Check for execution errors
+	if err != nil {
+		http.Error(w, `{"error":"Execution error", "details":"`+string(output)+`"}`, http.StatusInternalServerError)
+		return
+	}
 
 	// Prepare the JSON response
 	response := map[string]string{
