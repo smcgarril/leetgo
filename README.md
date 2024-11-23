@@ -2,7 +2,7 @@
 A learning exercise in Go programming and web development.  
 
 ### Quick Start
-(Assumes an installation of Go > 1.11)
+(Assumes an [installation of Go](https://go.dev/doc/install))
 
 1. Clone the repo
   ```

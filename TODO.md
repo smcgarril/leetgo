@@ -1,15 +1,19 @@
 ## Features to be implemented
 
-1. Design DB integration 
+1. ~~Design DB integration~~
 
-2. Execute code in containerized sandbox
+2. Implement full solution verification (handle many data types and execute all unit tests)
 
-3. Add syntax highlighting to code editor
+3. Implement user registration/log in
 
-4. Implement solution verification
+4. Store past user submissions
 
-5. Improve UI
+5. Display data on submissions
 
-6. Containerize for deployment
+6. Improve UI
 
-7. Implement user registration/log in
+7. Execute code in containerized sandbox
+
+8. Add syntax highlighting to code editor
+
+9. Containerize for deployment
