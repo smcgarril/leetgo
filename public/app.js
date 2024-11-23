@@ -38,7 +38,7 @@ function renderProblems(problems) {
     problems.forEach(problem => {
         const option = document.createElement('option');
         option.value = problem.id; // Use problem ID as the value
-        option.innerText = problem.title; // Display the title
+        option.innerText = problem.name; // Display the title
         select.appendChild(option);
     });
 
@@ -53,7 +53,7 @@ function displayProblemDescription(problems) {
 
     const descriptionDiv = document.getElementById('problem-description');
     if (currentProblem) {
-        descriptionDiv.innerHTML = `<h3>${currentProblem.title}</h3><p>${currentProblem.description}</p>`;
+        descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.short_description}</p>`;
     } else {
         descriptionDiv.innerHTML = '';
     }
@@ -66,16 +66,14 @@ async function runCode() {
     }
 
     const code = editor.getValue(); // Get the code from the editor
-    const testInput = currentProblem.test_input;
-    const problem = currentProblem.function_name;
-    const expected = currentProblem.expected;
-    try {
+    const problem_id = currentProblem.id;
+    const problem = currentProblem.name;
 
+    try {
         const payload = {
             code: code,           // Your editor content
-            test_input: testInput, // Input for testing
-            problem: problem,      // Type of problem
-            expected: expected     // Expected output
+            problem_id: problem_id,
+            problem: problem      // Type of problem
         };
 
         console.log(payload);
