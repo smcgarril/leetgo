@@ -1,5 +1,15 @@
+const initialCode = 
+`func main() {
+    fmt.Println("Welcome to LeetGo!")
+}`;
+
 let editor;
 let currentProblem = null;
+
+// Seed editor with welcome message
+function seedEditor(data) {
+    editor.setValue(data);
+}
 
 // Function to fetch problems from the backend
 async function fetchProblems() {
@@ -45,6 +55,7 @@ function renderProblems(problems) {
     problemsDiv.appendChild(select);
 }
 
+// Display problem description in left hand column
 function displayProblemDescription(problems) {
     const select = document.getElementById('problem-select');
     const selectedProblemId = select.value;
@@ -54,8 +65,16 @@ function displayProblemDescription(problems) {
     const descriptionDiv = document.getElementById('problem-description');
     if (currentProblem) {
         descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.short_description}</p>`;
+        loadProblem()
     } else {
         descriptionDiv.innerHTML = '';
+    }
+}
+
+// Function to load selected problem into the editor
+function loadProblem() {
+    if (currentProblem) {
+        editor.setValue(currentProblem.problem_seed);
     }
 }
 
@@ -133,6 +152,7 @@ async function runCode() {
     }
 }
 
+
 // Call fetchProblems when the page loads
 fetchProblems();
 
@@ -141,8 +161,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Initialize CodeMirror editor for the user to input code
     editor = CodeMirror(document.getElementById('editor'), {
-        mode: 'javascript',
+        mode: 'text/x-go',
         lineNumbers: true,
         theme: 'default',
+        indentUnit: 4,
+        tabSize: 4,
     });
+
+    seedEditor(initialCode);
 });

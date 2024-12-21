@@ -123,6 +123,26 @@ input:checked + .slider:before {
     color: #1b263b; /* Navy */
     border-radius: 4px;
 }
+/* Button */
+#button-container {
+    display: flex;
+    justify-content: flex-start;
+}
+
+#button-container button {
+    width: 25%;
+    padding: 0.5em;
+    background-color: #006bb6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#button-container button:hover {
+    background-color: #00509e;
+}
 
 /* Results Section */
 .result {
@@ -149,8 +169,11 @@ body.dark-mode .right-column {
     border-color: #444;
 }
 
-body.dark-mode #editor {
+body.dark-mode #editor-container {
     background-color: #2c2c2c; /* Dark gray */
+}
+
+body.dark-mode #editor {
     color: #f5f5f5; /* Near white */
 }
 

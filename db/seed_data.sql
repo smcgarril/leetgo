@@ -1,6 +1,15 @@
 -- Insert a new problem
-INSERT OR IGNORE INTO problems (id, name, short_description, long_description, difficulty) 
-VALUES (1, 'Palindrome', 'Check if a string is a palindrome', 'Write a function that checks if a string is the same forwards and backwards, ignoring spaces and case.', 'easy');
+INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, difficulty) 
+VALUES (
+    1,
+    'Palindrome',
+    'Check if a string is a palindrome',
+    'Write a function that checks if a string is the same forwards and backwards, ignoring spaces and case.',
+    'func Palindrome(s string) bool {
+    
+}',
+    'easy'
+    );
 
 -- Insert test cases for the "Palindrome" problem
 INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_type, expected_output, output_type)
@@ -10,8 +19,17 @@ VALUES
 (3, 1, '"A man a plan a canal Panama"', '"string"', '"true"', '"bool"');
 
 -- Insert a new problem
-INSERT OR IGNORE INTO problems (id, name, short_description, long_description, difficulty) 
-VALUES (2, 'Sum', 'Return the sum of two integers', 'Write a function that returns the sum of two integers', 'easy');
+INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, difficulty) 
+VALUES (
+    2, 
+    'Sum', 
+    'Return the sum of two integers', 
+    'Write a function that returns the sum of two integers', 
+    'func Sum(x, y int) int {
+    
+}', 
+    'easy'
+);
 
 -- Insert test cases for the "Sum" problem
 INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_type, expected_output, output_type)
