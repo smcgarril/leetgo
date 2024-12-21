@@ -16,7 +16,9 @@ type ProblemExample struct {
 	ID             string `json:"id"`
 	PromblemID     string `json:"problem_id"`
 	Input          string `json:"input"`
+	InputType      string `json:"input_type"`
 	ExpectedOutput string `json:"expected_output"`
+	OutputType     string `json:"output_type"`
 }
 
 // CodeReqeuest represents a user generated code snippet with test validation
@@ -24,4 +26,11 @@ type CodeSubmission struct {
 	Code      string `json:"code"`
 	ProblemID string `json:"problem_id"`
 	Problem   string `json:"problem"`
+}
+
+// CodeResponse respresents the results of a test execution
+type CodeResponse struct {
+	TestCount  int    `json:"testCount"`
+	TestPassed int    `json:"testPassed"`
+	Output     string `json:"output"`
 }

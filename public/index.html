@@ -3,20 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeetCode Style Problems</title>
+    <title>LeetGo</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/mode/javascript/javascript.min.js"></script>
-    <link rel="stylesheet" href="style.css"> <!-- Optional, for styling -->
-    <script src="app.js" defer></script> <!-- Ensure that script.js is linked here -->
+    <script src="app.js" defer></script>
 </head>
 <body>
-    <h1>LeetCode Style Problems</h1>
-    <div id="problems"></div> <!-- Dropdown will render here -->
-    <div id="problem-description"></div> <!-- Problem description will be shown here -->
-    <h2>Code Editor</h2>
-    <div id="editor"></div> <!-- Code editor will render here -->
-    <button onclick="runCode()">Run Code</button>
-    <div id="output"></div> <!-- Code output will be shown here -->
+    <div class="header">
+        <h1>LeetGo</h1>
+        <div class="dark-mode-toggle">
+            <label for="darkModeToggle">Dark Mode</label>
+            <label class="switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    <div class="container">
+        <div class="left-column">
+            <h2>Select Problem</h2>
+            <div id="problems">
+                <label for="problemDropdown">Select Problem:</label>
+                <select id="problemDropdown"></select>
+            </div>
+            <div id="problem-description">
+                <h3>Description</h3>
+                <p>Select a problem to view its description.</p>
+            </div>
+        </div>
+        <div class="right-column">
+            <h2>Code Editor</h2>
+            <div id="editor"></div>
+            <button onclick="runCode()">Run Code</button>
+            <div>
+                <strong>Output:</strong> <span class="result" id="output"></span>
+            </div>
+            <div>
+                Tests Passed: <span id="testPassed"></span>
+            </div>
+            <div>
+                Total Tests: <span id="testCount"></span>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+

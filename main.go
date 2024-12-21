@@ -31,7 +31,6 @@ func getProblemsHandler(db *sql.DB) http.HandlerFunc {
 func getProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// Query to fetch all problems
 	rows, err := db.Query(`
 		SELECT id, name, short_description, long_description, difficulty, attempts, solves 
 		FROM problems
@@ -43,10 +42,8 @@ func getProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	// Slice to hold the results
 	var problems []Problem
 
-	// Iterate over rows
 	for rows.Next() {
 		var p Problem
 		err := rows.Scan(
@@ -66,21 +63,18 @@ func getProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		problems = append(problems, p)
 	}
 
-	// Check for errors during iteration
 	if err = rows.Err(); err != nil {
 		http.Error(w, "Error iterating over problems", http.StatusInternalServerError)
 		log.Printf("Row iteration error: %v\n", err)
 		return
 	}
 
-	// Encode the result as JSON
 	json.NewEncoder(w).Encode(problems)
 }
 
 func getProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) {
-	// Query the database for problem examples with the given problem_id
 	rows, err := db.Query(`
-		SELECT id, problem_id, input, expected_output 
+		SELECT id, problem_id, input, input_type, expected_output, output_type 
 		FROM problem_examples 
 		WHERE problem_id = ?`, problemID)
 	if err != nil {
@@ -90,17 +84,15 @@ func getProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) 
 
 	var examples []ProblemExample
 
-	// Iterate through the rows and populate the ProblemExample slice
 	for rows.Next() {
 		var example ProblemExample
-		err := rows.Scan(&example.ID, &example.PromblemID, &example.Input, &example.ExpectedOutput)
+		err := rows.Scan(&example.ID, &example.PromblemID, &example.Input, &example.InputType, &example.ExpectedOutput, &example.OutputType)
 		if err != nil {
 			return nil, err
 		}
 		examples = append(examples, example)
 	}
 
-	// Check for errors encountered during iteration
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
@@ -110,7 +102,6 @@ func getProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) 
 
 // convertToType dynamically converts a string to its Go type
 func convertToType(input string) (interface{}, error) {
-	// Trim surrounding whitespace
 	input = strings.TrimSpace(input)
 
 	// Try unmarshaling as JSON (handles arrays, maps, etc.)
@@ -132,11 +123,20 @@ func convertToType(input string) (interface{}, error) {
 	return input, nil
 }
 
-// Create a comma-separated list of arguments from the input
 func formatFunctionArguments(input interface{}) (string, error) {
+	// Handle the case where the input is a string
+	if str, ok := input.(string); ok {
+		args := []string{}
+		for _, char := range str {
+			args = append(args, fmt.Sprintf("%#v", string(char)))
+		}
+		return strings.Join(args, ", "), nil
+	}
+
+	// Handle the case where the input is a slice of interface{}
 	slice, ok := input.([]interface{})
 	if !ok {
-		return "", fmt.Errorf("input is not a slice: %v", input)
+		return "", fmt.Errorf("input is neither a string nor a slice: %v", input)
 	}
 
 	args := []string{}
@@ -147,7 +147,6 @@ func formatFunctionArguments(input interface{}) (string, error) {
 }
 
 func executeCode(w http.ResponseWriter, r *http.Request) {
-	// Decode the user-submitted code from the request body
 	var codeSubmission CodeSubmission
 
 	// Read the body into a byte slice
@@ -180,99 +179,139 @@ func executeCode(w http.ResponseWriter, r *http.Request) {
 	// Log the retrieved examples
 	log.Printf("Retrieved problem examples: %+v", examples)
 
-	// Convert the input and expected output to proper Go types
-	testInput, err := convertToType(examples[0].Input)
-	if err != nil {
-		http.Error(w, `{"error":"Failed to parse input"}`, http.StatusInternalServerError)
-		return
-	}
+	// Initialize slice of strings for results
+	results := []string{}
 
-	expectedOutput, err := convertToType(examples[0].ExpectedOutput)
-	if err != nil {
-		http.Error(w, `{"error":"Failed to parse expected output"}`, http.StatusInternalServerError)
-		return
-	}
+	for _, example := range examples {
 
-	// Format the input as arguments for the function call
-	formattedArgs, err := formatFunctionArguments(testInput)
-	if err != nil {
-		http.Error(w, `{"error":"Failed to format function arguments"}`, http.StatusInternalServerError)
-		return
-	}
-
-	// Generate the test harness
-	harness := `
-	package main
-	import (
-		"fmt"
-	)
-	
-	// User's function
-	%s
-	
-	func main() {
-		// Call the user's function with deconstructed inputs
-		output := %s(%s)
-		expected := %#v
-	
-		if fmt.Sprint(output) == fmt.Sprint(expected) {
-			fmt.Println("PASSED")
-		} else {
-			fmt.Printf("FAILED: Got %%v, Expected %%v\n", output, expected)
+		// Convert the input and expected output to proper Go types
+		testInput, err := convertToType(example.Input)
+		if err != nil {
+			http.Error(w, `{"error":"Failed to parse input"}`, http.StatusInternalServerError)
+			return
 		}
-	}`
 
-	// Wrap the submitted code in the test harness
-	code := fmt.Sprintf(harness, codeSubmission.Code, codeSubmission.Problem, formattedArgs, expectedOutput)
+		expectedOutput, err := convertToType(example.ExpectedOutput)
+		if err != nil {
+			http.Error(w, `{"error":"Failed to parse expected output"}`, http.StatusInternalServerError)
+			return
+		}
 
-	// Save the submitted code to a temporary file
-	codeFile := "temp_code.go"
+		fmt.Printf("The test input is: %v\n", testInput)
+		fmt.Printf("The example.InputType is: %v\n", example.InputType)
 
-	err = os.WriteFile(codeFile, []byte(code), 0644)
-	if err != nil {
-		http.Error(w, `{"error":"Failed to save code"}`, http.StatusInternalServerError)
-		return
+		var formattedArgs interface{}
+		if example.InputType == "\"string\"" {
+			formattedArgs = fmt.Sprintf("\"%s\"", testInput)
+		} else {
+			formattedArgs, err = formatFunctionArguments(testInput)
+		}
+
+		if err != nil {
+			http.Error(w, `{"error":"Failed to format function arguments"}`, http.StatusInternalServerError)
+			return
+		}
+
+		// Generate the test harness
+		harness := `
+		package main
+		import (
+			"fmt"
+		)
+		
+		// User's function
+		%s
+		
+		func main() {
+			// Call the user's function with deconstructed inputs
+			output := %s(%s)
+			expected := %#v
+		
+			if fmt.Sprint(output) == fmt.Sprint(expected) {
+				fmt.Println("PASSED")
+			} else {
+				fmt.Printf("FAILED")
+			}
+		}`
+
+		// Wrap the submitted code in the test harness
+		code := fmt.Sprintf(harness, codeSubmission.Code, codeSubmission.Problem, formattedArgs, expectedOutput)
+
+		// Save the submitted code to a temporary file
+		codeFile := "temp_code.go"
+
+		err = os.WriteFile(codeFile, []byte(code), 0644)
+		if err != nil {
+			http.Error(w, `{"error":"Failed to save code"}`, http.StatusInternalServerError)
+			return
+		}
+
+		// Execute the Go code
+		cmd := exec.Command("go", "run", codeFile)
+
+		testReturn, err := cmd.CombinedOutput()
+		fmt.Printf("Test return: %s", testReturn)
+
+		// Check for execution errors
+		if err != nil {
+			http.Error(w, `{"error":"Execution error", "details":"`+string(testReturn)+`"}`, http.StatusInternalServerError)
+			return
+		}
+
+		// Delete temp_code.go
+		err = os.Remove(codeFile)
+		if err != nil {
+			http.Error(w, `{"error":"Failed to delete tmp file"}`, http.StatusInternalServerError)
+			return
+		}
+
+		results = append(results, string(testReturn))
 	}
 
-	// Execute the Go code
-	cmd := exec.Command("go", "run", codeFile)
-	output, err := cmd.CombinedOutput()
+	fmt.Printf("results: %v", results)
 
-	// Check for execution errors
-	if err != nil {
-		http.Error(w, `{"error":"Execution error", "details":"`+string(output)+`"}`, http.StatusInternalServerError)
-		return
+	testCount := len(results)
+	testPassed := 0
+	for _, t := range results {
+		normalized := strings.TrimSpace(t)
+		if normalized == "PASSED" {
+			testPassed++
+		}
+	}
+	didPass := "PASSED"
+	if testCount != testPassed {
+		didPass = "FAILED"
 	}
 
-	// Prepare the JSON response
-	response := map[string]string{
-		"output": string(output),
+	// Sanity logging:
+	fmt.Printf("Number of tests: %d\n", testCount)
+	fmt.Printf("Number passed: %d\n", testPassed)
+	fmt.Printf("Results: %s\n", didPass)
+
+	response := CodeResponse{
+		TestCount:  testCount,
+		TestPassed: testPassed,
+		Output:     didPass,
 	}
 	fmt.Println(response)
 
-	if err != nil {
-		// Include the error message in the response
-		response["error"] = err.Error()
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	// if err != nil {
+	// 	// Include the error message in the response
+	// 	response["error"] = err.Error()
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// }
 
 	// Encode and send the JSON response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 
-	// Delete temp_code.go
-	err = os.Remove(codeFile)
-	if err != nil {
-		http.Error(w, `{"error":"Failed to delete tmp file"}`, http.StatusInternalServerError)
-		return
-	}
 }
 
 // Execute seed data from different files
 func seedFiles(db *sql.DB) {
 	seedFiles := []string{
-		"db/create_tables.sql", // Create tables
-		"db/seed_data.sql",     // Seed data
+		"db/create_tables.sql",
+		"db/seed_data.sql",
 	}
 
 	for _, file := range seedFiles {
@@ -284,7 +323,6 @@ func seedFiles(db *sql.DB) {
 
 // Execute SQL statements from a file
 func executeSQLFromFile(db *sql.DB, filename string) error {
-	// Read the SQL file
 	sqlData, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("error reading file %s: %v", filename, err)
