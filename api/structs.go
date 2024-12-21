@@ -1,4 +1,4 @@
-package main
+package api
 
 // Problem represents a LeetCode-style problem
 type Problem struct {
