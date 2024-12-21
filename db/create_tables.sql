@@ -4,6 +4,7 @@ CREATE TABLE if NOT EXISTS problems (
     name TEXT NOT NULL,
     short_description TEXT,
     long_description TEXT,
+    problem_seed TEXT,
     difficulty TEXT,
     attempts INTEGER DEFAULT 0,
     solves INTEGER DEFAULT 0

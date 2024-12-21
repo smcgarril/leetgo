@@ -24,7 +24,7 @@ func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	rows, err := db.Query(`
-		SELECT id, name, short_description, long_description, difficulty, attempts, solves 
+		SELECT id, name, short_description, long_description, problem_seed, difficulty, attempts, solves 
 		FROM problems
 	`)
 	if err != nil {
@@ -43,6 +43,7 @@ func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			&p.Name,
 			&p.ShortDescription,
 			&p.LongDescription,
+			&p.ProblemSeed,
 			&p.Difficulty,
 			&p.Attempts,
 			&p.Solves,
@@ -78,7 +79,14 @@ func GetProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) 
 
 	for rows.Next() {
 		var example ProblemExample
-		err := rows.Scan(&example.ID, &example.PromblemID, &example.Input, &example.InputType, &example.ExpectedOutput, &example.OutputType)
+		err := rows.Scan(
+			&example.ID,
+			&example.PromblemID,
+			&example.Input,
+			&example.InputType,
+			&example.ExpectedOutput,
+			&example.OutputType,
+		)
 		if err != nil {
 			return nil, err
 		}
