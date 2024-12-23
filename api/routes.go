@@ -23,10 +23,23 @@ func GetProblemsHandler(db *sql.DB) http.HandlerFunc {
 func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	// rows, err := db.Query(`
+	// 	SELECT id, name, short_description, long_description, problem_seed, examples, difficulty, attempts, solves
+	// 	FROM problems
+	// `)
 	rows, err := db.Query(`
-		SELECT id, name, short_description, long_description, problem_seed, difficulty, attempts, solves 
-		FROM problems
-	`)
+    SELECT 
+        id, 
+        name, 
+        short_description, 
+        long_description, 
+        problem_seed, 
+        REPLACE(examples, '\\"', "'") AS examples, 
+        difficulty, 
+        attempts, 
+        solves 
+    FROM problems
+`)
 	if err != nil {
 		http.Error(w, "Error fetching problems from database", http.StatusInternalServerError)
 		log.Printf("Query error: %v\n", err)
@@ -44,6 +57,7 @@ func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			&p.ShortDescription,
 			&p.LongDescription,
 			&p.ProblemSeed,
+			&p.Examples,
 			&p.Difficulty,
 			&p.Attempts,
 			&p.Solves,

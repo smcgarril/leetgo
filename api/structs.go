@@ -8,6 +8,7 @@ type Problem struct {
 	LongDescription  string `json:"long_description"`
 	Difficulty       string `json:"difficulty"`
 	ProblemSeed      string `json:"problem_seed"`
+	Examples         string `json:"examples"`
 	Attempts         string `json:"attempts"`
 	Solves           string `json:"solves"`
 }
