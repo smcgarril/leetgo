@@ -65,7 +65,8 @@ function displayProblemDescription(problems) {
     const descriptionDiv = document.getElementById('problem-description');
     if (currentProblem) {
         descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.long_description}</p>`;
-        // renderExamples(currentProblem.examples);
+        renderExamples(currentProblem.examples);
+        // renderExamples(exampleData)
         loadProblem();
     } else {
         descriptionDiv.innerHTML = '';
@@ -73,32 +74,36 @@ function displayProblemDescription(problems) {
 }
 
 // // Load problem examples
-// function renderExamples(rawExamples) {
-//     let examples;
-//     try {
-//         examples = JSON.parse(rawExamples);
-//         console.log(examples);
-//     } catch (error) {
-//         console.error("Failed to parse examples:", error);
-//     }
+function renderExamples(examples) {
+    console.log("examples is: ", examples);
+    try {
+        examples = JSON.parse(examples);
+    } catch (error) {
+        console.error("Failed to parse examples:", error);
+    }
 
-//     const examplesDiv = document.getElementById('examples');
-//     examplesDiv.innerHTML = ''; // Clear previous examples
+    const examplesDiv = document.getElementById('examples');
+    examplesDiv.innerHTML = ''; // Clear previous examples
 
-//     examples.forEach((example, index) => {
-//         const exampleContainer = document.createElement('div');
-//         exampleContainer.style.marginBottom = '1em';
+    // Check if examples is an array
+    if (Array.isArray(examples)) {
+        examples.forEach((example, index) => {
+            const exampleContainer = document.createElement('div');
+            exampleContainer.style.marginBottom = '1em';
 
-//         exampleContainer.innerHTML = `
-//             <p><strong>Example ${index + 1}:</strong></p>
-//             <p style="margin-left: 1em;">Input: ${example.input}</p>
-//             <p style="margin-left: 1em;">Output: ${example.output}</p>
-//             <p style="margin-left: 1em;">Explanation: ${example.explanation}</p>
-//         `;
+            exampleContainer.innerHTML = `
+                <p><strong>Example ${index + 1}:</strong></p>
+                <p style="margin-left: 1em;">Input: ${example.input}</p>
+                <p style="margin-left: 1em;">Output: ${example.output}</p>
+                <p style="margin-left: 1em;">Explanation: ${example.explanation}</p>
+            `;
 
-//         examplesDiv.appendChild(exampleContainer);
-//     });
-// }
+            examplesDiv.appendChild(exampleContainer);
+        });
+    } else {
+        console.error("Examples is not an array:", examples);
+    }
+}
 
 // Function to load selected problem into the editor
 function loadProblem() {

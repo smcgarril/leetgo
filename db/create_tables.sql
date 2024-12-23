@@ -5,6 +5,7 @@ CREATE TABLE if NOT EXISTS problems (
     short_description TEXT,
     long_description TEXT,
     problem_seed TEXT,
+    examples TEXT,
     difficulty TEXT,
     attempts INTEGER DEFAULT 0,
     solves INTEGER DEFAULT 0
