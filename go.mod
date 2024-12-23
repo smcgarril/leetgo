@@ -8,4 +8,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.24
 )
 
-require github.com/felixge/httpsnoop v1.0.3 // indirect
+require (
+	github.com/felixge/httpsnoop v1.0.3 // indirect
+	github.com/iancoleman/orderedmap v0.3.0 // indirect
+)

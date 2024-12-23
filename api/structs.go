@@ -18,9 +18,7 @@ type ProblemExample struct {
 	ID             string `json:"id"`
 	PromblemID     string `json:"problem_id"`
 	Input          string `json:"input"`
-	InputType      string `json:"input_type"`
 	ExpectedOutput string `json:"expected_output"`
-	OutputType     string `json:"output_type"`
 }
 
 // CodeReqeuest represents a user generated code snippet with test validation
