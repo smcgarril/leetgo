@@ -4,7 +4,7 @@ VALUES (
     1,
     'Palindrome',
     'Check if a string is a palindrome',
-    'Write a function that checks if a string is the same forwards and backwards, ignoring spaces and case.',
+    'A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Alphanumeric characters include letters and numbers.<br><br>Given a string <code>s</code>, return <code>true</code> if it is a palindrome, or <code>false</code> otherwise.',
     'func Palindrome(s string) bool {
     
 }',
@@ -24,7 +24,7 @@ VALUES (
     2, 
     'Sum', 
     'Return the sum of two integers', 
-    'Write a function that returns the sum of two integers', 
+    'Write a function that returns the sum of two integers.', 
     'func Sum(x, y int) int {
     
 }', 

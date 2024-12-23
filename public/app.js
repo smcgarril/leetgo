@@ -64,12 +64,41 @@ function displayProblemDescription(problems) {
 
     const descriptionDiv = document.getElementById('problem-description');
     if (currentProblem) {
-        descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.short_description}</p>`;
-        loadProblem()
+        descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.long_description}</p>`;
+        // renderExamples(currentProblem.examples);
+        loadProblem();
     } else {
         descriptionDiv.innerHTML = '';
     }
 }
+
+// // Load problem examples
+// function renderExamples(rawExamples) {
+//     let examples;
+//     try {
+//         examples = JSON.parse(rawExamples);
+//         console.log(examples);
+//     } catch (error) {
+//         console.error("Failed to parse examples:", error);
+//     }
+
+//     const examplesDiv = document.getElementById('examples');
+//     examplesDiv.innerHTML = ''; // Clear previous examples
+
+//     examples.forEach((example, index) => {
+//         const exampleContainer = document.createElement('div');
+//         exampleContainer.style.marginBottom = '1em';
+
+//         exampleContainer.innerHTML = `
+//             <p><strong>Example ${index + 1}:</strong></p>
+//             <p style="margin-left: 1em;">Input: ${example.input}</p>
+//             <p style="margin-left: 1em;">Output: ${example.output}</p>
+//             <p style="margin-left: 1em;">Explanation: ${example.explanation}</p>
+//         `;
+
+//         examplesDiv.appendChild(exampleContainer);
+//     });
+// }
 
 // Function to load selected problem into the editor
 function loadProblem() {
