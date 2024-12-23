@@ -66,7 +66,6 @@ function displayProblemDescription(problems) {
     if (currentProblem) {
         descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.long_description}</p>`;
         renderExamples(currentProblem.examples);
-        // renderExamples(exampleData)
         loadProblem();
     } else {
         descriptionDiv.innerHTML = '';
