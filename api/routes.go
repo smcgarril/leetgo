@@ -23,10 +23,6 @@ func GetProblemsHandler(db *sql.DB) http.HandlerFunc {
 func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	// rows, err := db.Query(`
-	// 	SELECT id, name, short_description, long_description, problem_seed, examples, difficulty, attempts, solves
-	// 	FROM problems
-	// `)
 	rows, err := db.Query(`
     SELECT 
         id, 

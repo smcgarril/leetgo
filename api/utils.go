@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// convertToType dynamically converts a string to its Go type
+// Dynamically convert a string to its Go type
 func ConvertToType(input string) (interface{}, error) {
 	input = strings.TrimSpace(input)
 
