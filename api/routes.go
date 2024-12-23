@@ -77,7 +77,7 @@ func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 func GetProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) {
 	rows, err := db.Query(`
-		SELECT id, problem_id, input, input_type, expected_output, output_type 
+		SELECT id, problem_id, input, expected_output 
 		FROM problem_examples 
 		WHERE problem_id = ?`, problemID)
 	if err != nil {
@@ -93,9 +93,7 @@ func GetProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) 
 			&example.ID,
 			&example.PromblemID,
 			&example.Input,
-			&example.InputType,
 			&example.ExpectedOutput,
-			&example.OutputType,
 		)
 		if err != nil {
 			return nil, err
@@ -130,6 +128,7 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Log the raw request body
 	log.Printf("Raw request body: %s", string(bodyBytes))
 
+	// Unmarshal JSON into codeSubmission struct
 	err = json.Unmarshal(bodyBytes, &codeSubmission)
 	if err != nil {
 		http.Error(w, `{"error":"Invalid request"}`, http.StatusBadRequest)
@@ -155,33 +154,15 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	for _, example := range examples {
 
-		// Convert the input and expected output to proper Go types
-		testInput, err := ConvertToType(example.Input)
-		if err != nil {
-			http.Error(w, `{"error":"Failed to parse input"}`, http.StatusInternalServerError)
-			return
-		}
+		inputJSON := example.Input
+		formattedArgs := FormatTestJSON(inputJSON)
 
-		expectedOutput, err := ConvertToType(example.ExpectedOutput)
-		if err != nil {
-			http.Error(w, `{"error":"Failed to parse expected output"}`, http.StatusInternalServerError)
-			return
-		}
+		fmt.Printf("The formattedArgs are: %s", formattedArgs)
 
-		fmt.Printf("The test input is: %v\n", testInput)
-		fmt.Printf("The example.InputType is: %v\n", example.InputType)
+		outputJSON := example.ExpectedOutput
+		expectedOutput := FormatTestJSON(outputJSON)
 
-		var formattedArgs interface{}
-		if example.InputType == "\"string\"" {
-			formattedArgs = fmt.Sprintf("\"%s\"", testInput)
-		} else {
-			formattedArgs, err = FormatFunctionArguments(testInput)
-		}
-
-		if err != nil {
-			http.Error(w, `{"error":"Failed to format function arguments"}`, http.StatusInternalServerError)
-			return
-		}
+		fmt.Printf("The expectedOutput are: %s", expectedOutput)
 
 		// Generate the test harness
 		harness := `

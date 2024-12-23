@@ -26,3 +26,6 @@ go.work.sum
 
 # db file
 db.sqlite3
+
+# test execution file
+temp_code.go

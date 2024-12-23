@@ -151,7 +151,9 @@ async function runCode() {
         }
 
         const rawText = await response.text();
+        console.log(rawText)
         const data = JSON.parse(rawText);
+        console.log(data)
 
         if (data.output) {
             // Update output element

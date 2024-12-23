@@ -29,11 +29,11 @@ VALUES (
     );
 
 -- Insert test cases for the "Palindrome" problem
-INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_type, expected_output, output_type)
+INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
 VALUES
-(1, 1, '"radar"', '"string"', '"true"', '"bool"'),
-(2, 1, '"hello"', '"string"', '"false"', '"bool"'),
-(3, 1, '"A man a plan a canal Panama"', '"string"', '"true"', '"bool"');
+(1, 1, '{"s": "\\\"radar\\\""}', '{"result": "true"}'),
+(2, 1, '{"s": "\\\"hello\\\""}', '{"result": "false"}'),
+(3, 1, '{"s": "\\\"A man a plan a canal Panama\\\""}', '{"result": "true"}');
 
 -- Insert "Sum" problem
 INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, difficulty) 
@@ -66,20 +66,20 @@ VALUES (
 );
 
 -- Insert test cases for the "Sum" problem
-INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_type, expected_output, output_type)
+INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
 VALUES
-(4, 2, '[1, 2]', '"[]int"', '3', '"int"'),
-(5, 2, '[-1, 2]', '"[]int"', '1', '"int"'),
-(6, 2, '[0, 0]', '"[]int"', '0', '"int"');
+(4, 2, '{"x": "1", "y": "2"}', '{"result": "3"}'),
+(5, 2, '{"x": "-1", "y": "2"}', '{"result": "1"}'),
+(6, 2, '{"x": "0", "y": "0"}', '{"result": "0"}');
 
 -- Insert "Two Sum" problem
 INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, difficulty) 
 VALUES (
     3, 
-    'Two Sum', 
+    'TwoSum', 
     'Return the indexes of the two numbers that sum to the target', 
     'Given an array of integers <code>nums</code> and an integer <code>target</code>, return <i>indices of the two numbers such that they add up to <code>target</code></i>.<br></br>You may assume that each input would have <strong><i>exactly</i> one solution</strong>, and you may not use the <i>same</i> element twice.<br></br>You can return the answer in any order.', 
-    'func twoSum(nums []int, target int) []int {
+    'func TwoSum(nums []int, target int) []int {
     
 }', 
     '[
@@ -103,11 +103,11 @@ VALUES (
 );
 
 -- Insert test cases for the "Two Sum" problem
-INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_type, expected_output, output_type)
+INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
 VALUES
-(7, 3, '[2, 7, 11, 15], 9', '"[]int, int"', '[0, 1]', '"[]int"'),
-(8, 3, '[3, 2, 4], 6', '"[]int", int', '[1, 2]', '"[]int"'),
-(9, 3, '[0, 1], 6', '"[]int", int', '[0, 1]', '"[]int"');
+(7, 3, '{"nums": "[]int{2, 7, 11, 15}", "target": "9"}', '{"indices": "[0 1]"}'),
+(8, 3, '{"nums": "[]int{3, 2, 4}", "target": "6"}', '{"indices": "[1 2]"}'),
+(9, 3, '{"nums": "[]int{3, 3}", "target": "6"}', '{"indices": "[0 1]"}');
 
 -- Insert sample user
 INSERT OR IGNORE INTO users (id, username, email, password)
