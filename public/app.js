@@ -67,12 +67,19 @@ function displayProblemDescription(problems) {
         descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.long_description}</p>`;
         renderExamples(currentProblem.examples);
         loadProblem();
+        clearResults();
     } else {
         descriptionDiv.innerHTML = '';
     }
 }
 
-// // Load problem examples
+// Clear results
+function clearResults() {
+    document.getElementById('output').innerText = '';
+    document.getElementById('testPassed').innerText = '';
+    document.getElementById('testCount').innerText = '';
+}
+// Load problem examples
 function renderExamples(examples) {
     console.log("examples is: ", examples);
     try {
