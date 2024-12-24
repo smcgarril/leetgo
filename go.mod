@@ -11,4 +11,5 @@ require (
 require (
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/iancoleman/orderedmap v0.3.0 // indirect
+	github.com/traefik/yaegi v0.16.1 // indirect
 )

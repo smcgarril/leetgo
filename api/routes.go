@@ -7,9 +7,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"os/exec"
 	"strings"
+
+	"github.com/traefik/yaegi/interp"
 )
 
 // Define a function that returns an http.HandlerFunc
@@ -152,73 +152,103 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Initialize slice of strings for results
 	results := []string{}
 
-	for _, example := range examples {
-
-		inputJSON := example.Input
-		formattedArgs := FormatTestJSON(inputJSON)
-
-		fmt.Printf("The formattedArgs are: %s", formattedArgs)
-
-		outputJSON := example.ExpectedOutput
-		expectedOutput := FormatTestJSON(outputJSON)
-
-		fmt.Printf("The expectedOutput are: %s", expectedOutput)
-
-		// Generate the test harness
-		harness := `
+	testHarness := `
 		package main
-		import (
-			"fmt"
-		)
-		
-		// User's function
+
 		%s
-		
-		func main() {
-			// Call the user's function with deconstructed inputs
-			output := %s(%s)
-			expected := %#v
-		
-			if fmt.Sprint(output) == fmt.Sprint(expected) {
-				fmt.Println("PASSED")
-			} else {
-				fmt.Printf("FAILED")
-			}
-		}`
+	`
+	userCode := fmt.Sprintf(testHarness, codeSubmission.Code)
+	println(userCode)
 
-		// Wrap the submitted code in the test harness
-		code := fmt.Sprintf(harness, codeSubmission.Code, codeSubmission.Problem, formattedArgs, expectedOutput)
+	i := interp.New(interp.Options{})
 
-		// Save the submitted code to a temporary file
-		codeFile := "temp_code.go"
-
-		err = os.WriteFile(codeFile, []byte(code), 0644)
-		if err != nil {
-			http.Error(w, `{"error":"Failed to save code"}`, http.StatusInternalServerError)
-			return
-		}
-
-		// Execute the Go code
-		cmd := exec.Command("go", "run", codeFile)
-
-		testReturn, err := cmd.CombinedOutput()
-		fmt.Printf("Test return: %s", testReturn)
-
-		// Check for execution errors
-		if err != nil {
-			http.Error(w, `{"error":"Execution error", "details":"`+string(testReturn)+`"}`, http.StatusInternalServerError)
-			return
-		}
-
-		// Delete temp_code.go
-		err = os.Remove(codeFile)
-		if err != nil {
-			http.Error(w, `{"error":"Failed to delete tmp file"}`, http.StatusInternalServerError)
-			return
-		}
-
-		results = append(results, string(testReturn))
+	_, err = i.Eval(userCode)
+	if err != nil {
+		panic(err)
 	}
+
+	testFunc := fmt.Sprintf("main.%s", codeSubmission.Problem)
+	println(testFunc)
+	v, err := i.Eval(testFunc)
+	if err != nil {
+		panic(err)
+	}
+
+	sum := v.Interface().(func(int, int) int)
+
+	for i, _ := range examples {
+		r := sum(1, 2)
+		println(i)
+		println(r)
+	}
+
+	// for _, example := range examples {
+
+	// 	inputJSON := example.Input
+	// 	formattedArgs := FormatTestJSON(inputJSON)
+
+	// 	fmt.Printf("The formattedArgs are: %s", formattedArgs)
+
+	// 	outputJSON := example.ExpectedOutput
+	// 	expectedOutput := FormatTestJSON(outputJSON)
+
+	// 	fmt.Printf("The expectedOutput are: %s", expectedOutput)
+
+	// 	// Generate the test harness
+	// 	harness := `
+	// 	package main
+	// 	import (
+	// 		"fmt"
+	// 	)
+
+	// 	// User's function
+	// 	%s
+
+	// 	func main() {
+	// 		// Call the user's function with deconstructed inputs
+	// 		output := %s(%s)
+	// 		expected := %#v
+
+	// 		if fmt.Sprint(output) == fmt.Sprint(expected) {
+	// 			fmt.Println("PASSED")
+	// 		} else {
+	// 			fmt.Printf("FAILED")
+	// 		}
+	// 	}`
+
+	// 	// Wrap the submitted code in the test harness
+	// 	code := fmt.Sprintf(harness, codeSubmission.Code, codeSubmission.Problem, formattedArgs, expectedOutput)
+
+	// 	// Save the submitted code to a temporary file
+	// 	codeFile := "temp_code.go"
+
+	// 	err = os.WriteFile(codeFile, []byte(code), 0644)
+	// 	if err != nil {
+	// 		http.Error(w, `{"error":"Failed to save code"}`, http.StatusInternalServerError)
+	// 		return
+	// 	}
+
+	// 	// Execute the Go code
+	// 	cmd := exec.Command("go", "run", codeFile)
+
+	// 	testReturn, err := cmd.CombinedOutput()
+	// 	fmt.Printf("Test return: %s", testReturn)
+
+	// 	// Check for execution errors
+	// 	if err != nil {
+	// 		http.Error(w, `{"error":"Execution error", "details":"`+string(testReturn)+`"}`, http.StatusInternalServerError)
+	// 		return
+	// 	}
+
+	// 	// Delete temp_code.go
+	// 	err = os.Remove(codeFile)
+	// 	if err != nil {
+	// 		http.Error(w, `{"error":"Failed to delete tmp file"}`, http.StatusInternalServerError)
+	// 		return
+	// 	}
+
+	// 	results = append(results, string(testReturn))
+	// }
 
 	fmt.Printf("results: %v", results)
 
