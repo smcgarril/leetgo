@@ -176,10 +176,17 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	sum := v.Interface().(func(int, int) int)
 
-	for i, _ := range examples {
-		r := sum(1, 2)
-		println(i)
-		println(r)
+	for _, example := range examples {
+		// Need to pull this dynamically from the example
+		output := sum(1, 2)
+
+		outputJSON := example.ExpectedOutput
+		expectedOutput := FormatTestJSON(outputJSON)
+
+		fmt.Println(output)
+		fmt.Println(expectedOutput)
+
+		println(fmt.Sprint(output) == fmt.Sprint(expectedOutput))
 	}
 
 	// for _, example := range examples {
