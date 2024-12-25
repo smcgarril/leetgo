@@ -129,10 +129,8 @@ func parseGoExpression(expr string) (interface{}, error) {
 	// Handle specific cases based on the expression type
 	switch v := node.(type) {
 	case *ast.CompositeLit: // Handle arrays/slices
-		fmt.Println("In the *ast.CompositeLit")
 		return parseCompositeLit(v)
 	case *ast.BasicLit: // Handle basic literals
-		fmt.Println("In the *ast.BasicLit")
 		return parseBasicLit(v)
 	case *ast.UnaryExpr: // Handle unary expressions (e.g., -5, +0)
 		return parseUnaryExpr(v)
@@ -161,12 +159,10 @@ func parseCompositeLit(lit *ast.CompositeLit) (interface{}, error) {
 func parseBasicLit(lit *ast.BasicLit) (interface{}, error) {
 	switch lit.Kind {
 	case token.INT: // Integer
-		fmt.Println("In the token.INT")
 		var value int
 		fmt.Sscanf(lit.Value, "%d", &value)
 		return value, nil
 	case token.STRING: // String
-		fmt.Println("In the token.STRING")
 		return lit.Value[1 : len(lit.Value)-1], nil // Remove quotes
 	default:
 		return nil, fmt.Errorf("unsupported literal kind: %s", lit.Kind)
@@ -272,7 +268,6 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		for key, value := range data {
 			// Assuming all values are strings needing parsing
 			if strValue, ok := value.(string); ok {
-				fmt.Println("HEEEEREEEE")
 				parsedValue, err := parseGoExpression(strValue)
 				if err != nil {
 					fmt.Printf("Failed to parse key %s: %v\n", key, err)
@@ -282,6 +277,9 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// ####################################################################
+		// Will have to figure out how to do this dynamically for each test case
+		// ####################################################################
 		// Extract the values for x and y
 		x, okX := parsedData["x"].(int)
 		y, okY := parsedData["y"].(int)
@@ -292,6 +290,9 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 		// Call the function dynamically
 		output := sum(x, y)
+		// ###
+		// End
+		// ###
 
 		outputJSON := example.ExpectedOutput
 		expectedOutput := FormatTestJSON(outputJSON)
