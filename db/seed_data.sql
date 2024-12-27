@@ -29,11 +29,11 @@ VALUES (
     );
 
 -- Insert test cases for the "Palindrome" problem
-INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
+INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_order, expected_output)
 VALUES
-(1, 1, '{"s": "\\\"radar\\\""}', '{"result": "true"}'),
-(2, 1, '{"s": "\\\"hello\\\""}', '{"result": "false"}'),
-(3, 1, '{"s": "\\\"A man a plan a canal Panama\\\""}', '{"result": "true"}');
+(1, 1, '{"s": "radar"}', '["s"]', '{"result": true}'),
+(2, 1, '{"s": "hello"}', '["s"]', '{"result": false}'),
+(3, 1, '{"s": "A man a plan a canal Panama"}', '["s"]', '{"result": true}');
 
 -- Insert "Sum" problem
 INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, difficulty) 
@@ -66,11 +66,11 @@ VALUES (
 );
 
 -- Insert test cases for the "Sum" problem
-INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
+INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_order, expected_output)
 VALUES
-(4, 2, '{"x": "1", "y": "2"}', '{"result": "3"}'),
-(5, 2, '{"x": "-1", "y": "2"}', '{"result": "1"}'),
-(6, 2, '{"x": "0", "y": "0"}', '{"result": "0"}');
+(4, 2, '{"x": 1, "y": 2}', '["x", "y"]', '{"result": 3}'),
+(5, 2, '{"x": -1, "y": 2}', '["x", "y"]', '{"result": 1}'),
+(6, 2, '{"x": 0, "y": 0}', '["x", "y"]', '{"result": 0}');
 
 -- Insert "Two Sum" problem
 INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, difficulty) 
@@ -103,11 +103,11 @@ VALUES (
 );
 
 -- Insert test cases for the "Two Sum" problem
-INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
+INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_order, expected_output)
 VALUES
-(7, 3, '{"nums": "[]int{2, 7, 11, 15}", "target": "9"}', '{"indices": "[0 1]"}'),
-(8, 3, '{"nums": "[]int{3, 2, 4}", "target": "6"}', '{"indices": "[1 2]"}'),
-(9, 3, '{"nums": "[]int{3, 3}", "target": "6"}', '{"indices": "[0 1]"}');
+(7, 3, '{"nums": [2, 7, 11, 15], "target": 9}', '["nums", "target"]', '{"indices": [0, 1]}'),
+(8, 3, '{"nums": [3, 2, 4], "target": 6}', '["nums", "target"]', '{"indices": [1, 2]}'),
+(9, 3, '{"nums": [3, 3], "target": 6}', '["nums", "target"]', '{"indices": [0, 1]}');
 
 -- Insert sample user
 INSERT OR IGNORE INTO users (id, username, email, password)
