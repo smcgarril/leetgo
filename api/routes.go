@@ -77,7 +77,7 @@ func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 func GetProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) {
 	rows, err := db.Query(`
-		SELECT id, problem_id, input, expected_output 
+		SELECT id, problem_id, input, input_order, expected_output 
 		FROM problem_examples 
 		WHERE problem_id = ?`, problemID)
 	if err != nil {
@@ -93,6 +93,7 @@ func GetProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) 
 			&example.ID,
 			&example.PromblemID,
 			&example.Input,
+			&example.InputOrder,
 			&example.ExpectedOutput,
 		)
 		if err != nil {
@@ -155,12 +156,27 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	for _, example := range examples {
 
 		inputJSON := example.Input
-		formattedArgs := FormatTestJSON(inputJSON)
+		input_order := []string{}
+		err := json.Unmarshal([]byte(example.InputOrder), &input_order)
+		if err != nil {
+			fmt.Println("Error unmarshalling input_order:", err)
+			return
+		}
+
+		formattedArgs, err := FormatArgs(inputJSON, input_order)
+		if err != nil {
+			fmt.Println("Error formatting arguments:", err)
+			return
+		}
 
 		fmt.Printf("The formattedArgs are: %s", formattedArgs)
 
 		outputJSON := example.ExpectedOutput
-		expectedOutput := FormatTestJSON(outputJSON)
+		expectedOutput, err := FormatExpectedOutput(outputJSON)
+		if err != nil {
+			fmt.Println("Error formatting expected output:", err)
+			return
+		}
 
 		fmt.Printf("The expectedOutput are: %s", expectedOutput)
 
@@ -177,7 +193,7 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		func main() {
 			// Call the user's function with deconstructed inputs
 			output := %s(%s)
-			expected := %#v
+			expected := %s
 		
 			if fmt.Sprint(output) == fmt.Sprint(expected) {
 				fmt.Println("PASSED")
@@ -246,12 +262,6 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		Output:     didPass,
 	}
 	fmt.Println(response)
-
-	// if err != nil {
-	// 	// Include the error message in the response
-	// 	response["error"] = err.Error()
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// }
 
 	// Encode and send the JSON response
 	w.Header().Set("Content-Type", "application/json")

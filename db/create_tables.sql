@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS problem_examples (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     problem_id INTEGER,
     input TEXT NOT NULL,
+    input_order TEXT NOT NULL,
     expected_output TEXT NOT NULL,
     FOREIGN KEY (problem_id) REFERENCES problems(id) ON DELETE CASCADE
 );

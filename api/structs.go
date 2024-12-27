@@ -18,6 +18,7 @@ type ProblemExample struct {
 	ID             string `json:"id"`
 	PromblemID     string `json:"problem_id"`
 	Input          string `json:"input"`
+	InputOrder     string `json:"input_order"`
 	ExpectedOutput string `json:"expected_output"`
 }
 
