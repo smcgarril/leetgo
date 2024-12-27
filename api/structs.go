@@ -6,9 +6,10 @@ type Problem struct {
 	Name             string `json:"name"`
 	ShortDescription string `json:"short_description"`
 	LongDescription  string `json:"long_description"`
-	Difficulty       string `json:"difficulty"`
 	ProblemSeed      string `json:"problem_seed"`
 	Examples         string `json:"examples"`
+	Params           string `json:"params"`
+	Difficulty       string `json:"difficulty"`
 	Attempts         string `json:"attempts"`
 	Solves           string `json:"solves"`
 }
@@ -33,4 +34,10 @@ type CodeResponse struct {
 	TestCount  int    `json:"testCount"`
 	TestPassed int    `json:"testPassed"`
 	Output     string `json:"output"`
+}
+
+// Params represents the function signature for each problem
+type Params struct {
+	Input  []string `json:"input"`
+	Output []string `json:"output"`
 }

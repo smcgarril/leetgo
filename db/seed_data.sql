@@ -1,5 +1,5 @@
 -- Insert "Palindrome" problem
-INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, difficulty) 
+INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, params, difficulty) 
 VALUES (
     1,
     'Palindrome',
@@ -25,18 +25,19 @@ VALUES (
         "explanation": "\\"amanaplanacanalpanama\\" is a palindrome."
     }
 ]',
+    '{"input": ["string"], "output": ["bool"]}',
     'easy'
     );
 
 -- Insert test cases for the "Palindrome" problem
 INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
 VALUES
-(1, 1, '{"s": "\\\"radar\\\""}', '{"result": "true"}'),
-(2, 1, '{"s": "\\\"hello\\\""}', '{"result": "false"}'),
-(3, 1, '{"s": "\\\"A man a plan a canal Panama\\\""}', '{"result": "true"}');
+(1, 1, '{"s": "radar"}', '{"result": true}'),
+(2, 1, '{"s": "hello"}', '{"result": false}'),
+(3, 1, '{"s": "A man a plan a canal Panama"}', '{"result": true}');
 
 -- Insert "Sum" problem
-INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, difficulty) 
+INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, params, difficulty) 
 VALUES (
     2, 
     'Sum', 
@@ -62,18 +63,19 @@ VALUES (
         "explanation": "0 plus 0 equals 0."
     }
 ]',
+    '{"input": ["int", "int"], "output": ["int"]}',
     'easy'
 );
 
 -- Insert test cases for the "Sum" problem
 INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
 VALUES
-(4, 2, '{"x": "1", "y": "2"}', '{"result": "3"}'),
-(5, 2, '{"x": "-1", "y": "2"}', '{"result": "1"}'),
-(6, 2, '{"x": "0", "y": "0"}', '{"result": "0"}');
+(4, 2, '{"x": 1, "y": 2}', '{"result": 3}'),
+(5, 2, '{"x": -1, "y": 2}', '{"result": 1}'),
+(6, 2, '{"x": 0, "y": 0}', '{"result": 0}');
 
 -- Insert "Two Sum" problem
-INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, difficulty) 
+INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, params, difficulty) 
 VALUES (
     3, 
     'TwoSum', 
@@ -99,15 +101,16 @@ VALUES (
         "explanation": "Because nums[0] + nums[1] == 6, we return [0, 1]."
     }
 ]',
+    '{"input": ["[]int", "int"], "output": ["[]int"]}',
     'easy'
 );
 
 -- Insert test cases for the "Two Sum" problem
 INSERT OR IGNORE INTO problem_examples (id, problem_id, input, expected_output)
 VALUES
-(7, 3, '{"nums": "[]int{2, 7, 11, 15}", "target": "9"}', '{"indices": "[0 1]"}'),
-(8, 3, '{"nums": "[]int{3, 2, 4}", "target": "6"}', '{"indices": "[1 2]"}'),
-(9, 3, '{"nums": "[]int{3, 3}", "target": "6"}', '{"indices": "[0 1]"}');
+(7, 3, '{"nums": [2, 7, 11, 15], "target": 9}', '{"indices": [0, 1]}'),
+(8, 3, '{"nums": [3, 2, 4], "target": 6}', '{"indices": [1, 2]}'),
+(9, 3, '{"nums": [3, 3], "target": 6}', '{"indices": [0, 1]}');
 
 -- Insert sample user
 INSERT OR IGNORE INTO users (id, username, email, password)

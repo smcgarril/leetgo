@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/traefik/yaegi/interp"
@@ -19,23 +20,41 @@ func GetProblemsHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+// Fetch problem parameters
+func GetProblemParams(db *sql.DB, problemID string) (Params, error) {
+	var params Params
+	var paramsJSON string
+
+	err := db.QueryRow(`SELECT params FROM problems WHERE id = ?`, problemID).Scan(&paramsJSON)
+	if err != nil {
+		log.Printf("Query error: %v\n", err)
+		return params, err
+	}
+	// Parse the JSON string into the Params struct
+	err = json.Unmarshal([]byte(paramsJSON), &params)
+	if err != nil {
+		log.Printf("JSON unmarshal error: %v\n", err)
+		return params, err
+	}
+
+	return params, nil
+}
+
 // Fetch all problems
 func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	rows, err := db.Query(`
-    SELECT 
-        id, 
-        name, 
-        short_description, 
-        long_description, 
-        problem_seed, 
-        REPLACE(examples, '\\"', "'") AS examples, 
-        difficulty, 
-        attempts, 
-        solves 
-    FROM problems
-`)
+		SELECT 
+			id, 
+			name, 
+			short_description, 
+			long_description, 
+			problem_seed, 
+			REPLACE(examples, '\\"', "'") AS examples, 
+			difficulty
+		FROM problems
+	`)
 	if err != nil {
 		http.Error(w, "Error fetching problems from database", http.StatusInternalServerError)
 		log.Printf("Query error: %v\n", err)
@@ -55,8 +74,6 @@ func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			&p.ProblemSeed,
 			&p.Examples,
 			&p.Difficulty,
-			&p.Attempts,
-			&p.Solves,
 		)
 		if err != nil {
 			http.Error(w, "Error scanning problems from database", http.StatusInternalServerError)
@@ -185,7 +202,53 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Will have to figure out how to do this dynamically for each test case
 	// ####################################################################
 	// Save symbol with type assertion
-	sum := v.Interface().(func(int, int) int)
+
+	// sum := v.Interface().(func(int, int) int)
+
+	var params Params
+	params, err = GetProblemParams(db, codeSubmission.ProblemID)
+	if err != nil {
+		log.Printf("Error unmarshalling input/output params: %v\n", err)
+	}
+
+	// Build the expected function type
+	funcType := BuildFuncType(params.Input, params.Output)
+
+	// Ensure the evaluated symbol is a function
+	funcValue := reflect.ValueOf(v.Interface())
+	if funcValue.Kind() != reflect.Func {
+		log.Fatalf("Evaluated symbol is not a function")
+	}
+
+	// Validate the function signature matches
+	if !funcValue.Type().ConvertibleTo(funcType) {
+		log.Fatalf("Function does not match the expected type signature: %v", funcType)
+	}
+
+	// Prepare arguments for the function call
+	var args []reflect.Value
+	for _, inputType := range params.Input {
+		// For demonstration, populate example inputs. Replace with actual test inputs.
+		switch inputType {
+		case "int":
+			args = append(args, reflect.ValueOf(5)) // Example integer input
+		case "string":
+			args = append(args, reflect.ValueOf("example")) // Example string input
+		case "bool":
+			args = append(args, reflect.ValueOf(true)) // Example boolean input
+		case "[]int":
+			args = append(args, reflect.ValueOf([]int{1, 2, 3})) // Example slice input
+		default:
+			log.Fatalf("Unsupported input type: %s", inputType)
+		}
+	}
+	// Call the function dynamically
+	results := funcValue.Call(args)
+
+	// Process and validate results
+	for _, result := range results {
+		fmt.Printf("Result: %v\n", result.Interface())
+	}
 	// ###
 	// End
 	// ###

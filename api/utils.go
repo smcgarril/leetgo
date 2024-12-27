@@ -7,6 +7,7 @@ import (
 	"go/parser"
 	"go/token"
 	"log"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -126,4 +127,42 @@ func RemoveOuterBackslashes(s string) string {
 func NormalizeString(s string) string {
 	s = strings.ReplaceAll(s, `\"`, `"`)
 	return s
+}
+
+func MapType(typeName string) reflect.Type {
+	switch typeName {
+	case "int":
+		return reflect.TypeOf(0)
+	case "string":
+		return reflect.TypeOf("")
+	case "bool":
+		return reflect.TypeOf(false)
+	case "[]int":
+		return reflect.TypeOf([]int{})
+	// Add other types as needed
+	default:
+		return nil // Unknown type
+	}
+}
+
+func BuildFuncType(inputTypes []string, outputTypes []string) reflect.Type {
+	var in []reflect.Type
+	for _, t := range inputTypes {
+		mappedType := MapType(t)
+		if mappedType == nil {
+			log.Fatalf("Unsupported input type: %s", t)
+		}
+		in = append(in, mappedType)
+	}
+
+	var out []reflect.Type
+	for _, t := range outputTypes {
+		mappedType := MapType(t)
+		if mappedType == nil {
+			log.Fatalf("Unsupported output type: %s", t)
+		}
+		out = append(out, mappedType)
+	}
+
+	return reflect.FuncOf(in, out, false)
 }
