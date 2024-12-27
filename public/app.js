@@ -75,7 +75,7 @@ function displayProblemDescription(problems) {
 
 // Clear results
 function clearResults() {
-    document.getElementById('output').innerText = '';
+    document.getElementById('result').innerText = '';
     document.getElementById('testPassed').innerText = '';
     document.getElementById('testCount').innerText = '';
 }
@@ -162,35 +162,35 @@ async function runCode() {
         const data = JSON.parse(rawText);
         console.log(data)
 
-        if (data.output) {
-            // Update output element
-            const outputElement = document.getElementById('output');
-            outputElement.innerText = data.output.trim();
+        if (data.result) {
+            // Update result element
+            const resultElement = document.getElementById('result');
+            resultElement.innerText = data.result.trim();
             // Add success or failure class
-            if (data.output === "PASSED") {
-                outputElement.classList.remove("failure");
-                outputElement.classList.add("success");
+            if (data.result === "PASSED") {
+                resultElement.classList.remove("failure");
+                resultElement.classList.add("success");
             } else {
-                outputElement.classList.remove("success");
-                outputElement.classList.add("failure");
+                resultElement.classList.remove("success");
+                resultElement.classList.add("failure");
             }
         } else {
-            document.getElementById('output').innerText = 'No output received';
+            document.getElementById('result').innerText = 'No result received';
         }
         if (data.testPassed) {
             document.getElementById('testPassed').innerText = data.testPassed;
         } else {
-            document.getElementById('output').innerText = 'No output received';
+            document.getElementById('result').innerText = 'No result received';
         }
         if (data.testCount) {
             document.getElementById('testCount').innerText = data.testCount;
         } else {
-            document.getElementById('output').innerText = 'No output received';
+            document.getElementById('result').innerText = 'No result received';
         }
 
     } catch (error) {
         console.error('Error running code:', error);
-        document.getElementById('output').innerText = 'Error running code: ' + error.message;
+        document.getElementById('result').innerText = 'Error running code: ' + error.message;
     }
 }
 

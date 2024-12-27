@@ -145,15 +145,15 @@ input:checked + .slider:before {
 }
 
 /* Results Section */
-.result {
+.resultClass {
     font-weight: bold;
 }
 
-.result.success {
+.resultClass.success {
     color: #388e3c; /* Vibrant green */
 }
 
-.result.failure {
+.resultClass.failure {
     color: #e53935; /* Bright red */
 }
 
