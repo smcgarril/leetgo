@@ -2,12 +2,92 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"log"
 	"regexp"
 	"strings"
 
 	"github.com/iancoleman/orderedmap"
 )
+
+// parseGoExpression takes a Go expression in string form and evaluates it into an actual Go value.
+func ParseGoExpression(expr string) (interface{}, error) {
+	// Use the Go parser to validate and parse the expression
+	node, err := parser.ParseExpr(expr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse expression: %w", err)
+	}
+
+	// Handle specific cases based on the expression type
+	switch v := node.(type) {
+	case *ast.CompositeLit: // Handle arrays/slices
+		return ParseCompositeLit(v)
+	case *ast.BasicLit: // Handle basic literals
+		return ParseBasicLit(v)
+	case *ast.UnaryExpr: // Handle unary expressions (e.g., -5, +0)
+		return ParseUnaryExpr(v)
+	default:
+		return nil, fmt.Errorf("unsupported expression type: %T", v)
+	}
+}
+
+// parseCompositeLit parses a Go composite literal (e.g., `[]int{1, 2, 3}`)
+func ParseCompositeLit(lit *ast.CompositeLit) (interface{}, error) {
+	// Example assumes array literals of type []int
+	var result []int
+	for _, elt := range lit.Elts {
+		if basicLit, ok := elt.(*ast.BasicLit); ok {
+			var value int
+			fmt.Sscanf(basicLit.Value, "%d", &value) // Basic conversion from string
+			result = append(result, value)
+		} else {
+			return nil, fmt.Errorf("unsupported composite element type: %T", elt)
+		}
+	}
+	return result, nil
+}
+
+// parseBasicLit parses a Go basic literal (e.g., "5")
+func ParseBasicLit(lit *ast.BasicLit) (interface{}, error) {
+	switch lit.Kind {
+	case token.INT: // Integer
+		var value int
+		fmt.Sscanf(lit.Value, "%d", &value)
+		return value, nil
+	case token.STRING: // String
+		return lit.Value[1 : len(lit.Value)-1], nil // Remove quotes
+	default:
+		return nil, fmt.Errorf("unsupported literal kind: %s", lit.Kind)
+	}
+}
+
+// parseUnaryExpr parses a Go unary expression (e.g., -5, +0)
+func ParseUnaryExpr(expr *ast.UnaryExpr) (interface{}, error) {
+	// Only handle basic literals as the operand
+	if basicLit, ok := expr.X.(*ast.BasicLit); ok {
+		value, err := ParseBasicLit(basicLit)
+		if err != nil {
+			return nil, err
+		}
+
+		// Apply the unary operator
+		switch expr.Op {
+		case token.SUB: // Negative numbers
+			if intValue, ok := value.(int); ok {
+				return -intValue, nil
+			}
+		case token.ADD: // Positive numbers (no-op)
+			return value, nil
+		default:
+			return nil, fmt.Errorf("unsupported unary operator: %s", expr.Op)
+		}
+	}
+
+	return nil, fmt.Errorf("unsupported operand type for unary expression: %T", expr.X)
+}
 
 // Unmarshal JSON and format for unit test execution
 func FormatTestJSON(inputJSON string) string {

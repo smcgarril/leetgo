@@ -4,9 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"go/ast"
-	"go/parser"
-	"go/token"
 	"io"
 	"log"
 	"net/http"
@@ -118,82 +115,6 @@ func ExecuteCodeHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// parseGoExpression takes a Go expression in string form and evaluates it into an actual Go value.
-func parseGoExpression(expr string) (interface{}, error) {
-	// Use the Go parser to validate and parse the expression
-	node, err := parser.ParseExpr(expr)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse expression: %w", err)
-	}
-
-	// Handle specific cases based on the expression type
-	switch v := node.(type) {
-	case *ast.CompositeLit: // Handle arrays/slices
-		return parseCompositeLit(v)
-	case *ast.BasicLit: // Handle basic literals
-		return parseBasicLit(v)
-	case *ast.UnaryExpr: // Handle unary expressions (e.g., -5, +0)
-		return parseUnaryExpr(v)
-	default:
-		return nil, fmt.Errorf("unsupported expression type: %T", v)
-	}
-}
-
-// parseCompositeLit parses a Go composite literal (e.g., `[]int{1, 2, 3}`)
-func parseCompositeLit(lit *ast.CompositeLit) (interface{}, error) {
-	// Example assumes array literals of type []int
-	var result []int
-	for _, elt := range lit.Elts {
-		if basicLit, ok := elt.(*ast.BasicLit); ok {
-			var value int
-			fmt.Sscanf(basicLit.Value, "%d", &value) // Basic conversion from string
-			result = append(result, value)
-		} else {
-			return nil, fmt.Errorf("unsupported composite element type: %T", elt)
-		}
-	}
-	return result, nil
-}
-
-// parseBasicLit parses a Go basic literal (e.g., "5")
-func parseBasicLit(lit *ast.BasicLit) (interface{}, error) {
-	switch lit.Kind {
-	case token.INT: // Integer
-		var value int
-		fmt.Sscanf(lit.Value, "%d", &value)
-		return value, nil
-	case token.STRING: // String
-		return lit.Value[1 : len(lit.Value)-1], nil // Remove quotes
-	default:
-		return nil, fmt.Errorf("unsupported literal kind: %s", lit.Kind)
-	}
-}
-
-// parseUnaryExpr parses a Go unary expression (e.g., -5, +0)
-func parseUnaryExpr(expr *ast.UnaryExpr) (interface{}, error) {
-	// Only handle basic literals as the operand
-	if basicLit, ok := expr.X.(*ast.BasicLit); ok {
-		value, err := parseBasicLit(basicLit)
-		if err != nil {
-			return nil, err
-		}
-
-		// Apply the unary operator
-		switch expr.Op {
-		case token.SUB: // Negative numbers
-			if intValue, ok := value.(int); ok {
-				return -intValue, nil
-			}
-		case token.ADD: // Positive numbers (no-op)
-			return value, nil
-		default:
-			return nil, fmt.Errorf("unsupported unary operator: %s", expr.Op)
-		}
-	}
-
-	return nil, fmt.Errorf("unsupported operand type for unary expression: %T", expr.X)
-}
-
 func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	var codeSubmission CodeSubmission
 
@@ -268,7 +189,7 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		for key, value := range data {
 			// Assuming all values are strings needing parsing
 			if strValue, ok := value.(string); ok {
-				parsedValue, err := parseGoExpression(strValue)
+				parsedValue, err := ParseGoExpression(strValue)
 				if err != nil {
 					fmt.Printf("Failed to parse key %s: %v\n", key, err)
 					continue
@@ -280,7 +201,7 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		// ####################################################################
 		// Will have to figure out how to do this dynamically for each test case
 		// ####################################################################
-		// Extract the values for x and y
+		// Extract the values for x and y along with type assertion
 		x, okX := parsedData["x"].(int)
 		y, okY := parsedData["y"].(int)
 
