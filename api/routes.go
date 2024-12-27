@@ -150,11 +150,10 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Log the retrieved examples
 	log.Printf("Retrieved problem examples: %+v", examples)
 
-	// Initialize slice of strings for results
-	results := []string{}
+	// Initialize slice of test calls
+	var testCalls []string
 
-	for _, example := range examples {
-
+	for i, example := range examples {
 		inputJSON := example.Input
 		input_order := []string{}
 		err := json.Unmarshal([]byte(example.InputOrder), &input_order)
@@ -180,87 +179,94 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 		fmt.Printf("The expectedOutput are: %s", expectedOutput)
 
-		// Generate the test harness
-		harness := `
+		// Append a single test call to the list
+		testCalls = append(testCalls, fmt.Sprintf(`
+			output%d := %s(%s)
+			expected%d := %s
+			if fmt.Sprint(output%d) == fmt.Sprint(expected%d) {
+				results = append(results, "PASSED")
+			} else {
+				results = append(results, "FAILED")
+			}
+		`, i+1, codeSubmission.Problem, formattedArgs, i+1, expectedOutput, i+1, i+1))
+
+	}
+
+	// Generate the complete test harness
+	harness := `
 		package main
 		import (
 			"fmt"
 		)
-		
-		// User's function
+
+		// User function
 		%s
-		
+
 		func main() {
-			// Call the user's function with deconstructed inputs
-			output := %s(%s)
-			expected := %s
-		
-			if fmt.Sprint(output) == fmt.Sprint(expected) {
-				fmt.Println("PASSED")
-			} else {
-				fmt.Printf("FAILED")
+			results := []string{}
+
+			%s
+
+			for i, result := range results {
+				fmt.Printf("Test %%d: %%s\n", i+1, result)
 			}
 		}`
 
-		// Wrap the submitted code in the test harness
-		code := fmt.Sprintf(harness, codeSubmission.Code, codeSubmission.Problem, formattedArgs, expectedOutput)
+	// Combine all test calls into the harness
+	harnessCode := fmt.Sprintf(harness, codeSubmission.Code, strings.Join(testCalls, "\n"))
 
-		// Save the submitted code to a temporary file
-		codeFile := "temp_code.go"
+	// Save the generated code to a temporary file
+	codeFile := "temp_code.go"
 
-		err = os.WriteFile(codeFile, []byte(code), 0644)
-		if err != nil {
-			http.Error(w, `{"error":"Failed to save code"}`, http.StatusInternalServerError)
-			return
-		}
-
-		// Execute the Go code
-		cmd := exec.Command("go", "run", codeFile)
-
-		testReturn, err := cmd.CombinedOutput()
-		fmt.Printf("Test return: %s", testReturn)
-
-		// Check for execution errors
-		if err != nil {
-			http.Error(w, `{"error":"Execution error", "details":"`+string(testReturn)+`"}`, http.StatusInternalServerError)
-			return
-		}
-
-		// Delete temp_code.go
-		err = os.Remove(codeFile)
-		if err != nil {
-			http.Error(w, `{"error":"Failed to delete tmp file"}`, http.StatusInternalServerError)
-			return
-		}
-
-		results = append(results, string(testReturn))
+	err = os.WriteFile(codeFile, []byte(harnessCode), 0644)
+	if err != nil {
+		fmt.Println("Failed to save code:", err)
+		return
 	}
 
-	fmt.Printf("results: %v", results)
+	// Execute the Go code
+	cmd := exec.Command("go", "run", codeFile)
+	testReturn, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Error executing test harness: %v\n", err)
+	}
+	fmt.Printf("Test return: %s\n", testReturn)
 
-	testCount := len(results)
+	// Delete temp_code.go
+	err = os.Remove(codeFile)
+	if err != nil {
+		http.Error(w, `{"error":"Failed to delete tmp file"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// Process the output to count PASSED and FAILED
+	testCount := 0
 	testPassed := 0
-	for _, t := range results {
-		normalized := strings.TrimSpace(t)
-		if normalized == "PASSED" {
-			testPassed++
+	output := string(testReturn)
+	result := "PASSED"
+
+	// Split the output into lines and count PASSED and FAILED results
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "Test") {
+			testCount++
+			if strings.Contains(line, "PASSED") {
+				testPassed++
+			} else {
+				result = "FAILED"
+			}
 		}
 	}
-	didPass := "PASSED"
-	if testCount != testPassed {
-		didPass = "FAILED"
-	}
 
-	// Sanity logging:
-	fmt.Printf("Number of tests: %d\n", testCount)
-	fmt.Printf("Number passed: %d\n", testPassed)
-	fmt.Printf("Results: %s\n", didPass)
-
+	// Prepare the response
 	response := CodeResponse{
 		TestCount:  testCount,
 		TestPassed: testPassed,
-		Output:     didPass,
+		Output:     output,
+		Result:     result,
 	}
+
+	// Print response for debugging
 	fmt.Println(response)
 
 	// Encode and send the JSON response
