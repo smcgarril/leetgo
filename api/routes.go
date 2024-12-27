@@ -157,25 +157,40 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 		%s
 	`
+
+	// Inject user submission into test harness
 	userCode := fmt.Sprintf(testHarness, codeSubmission.Code)
 	println(userCode)
 
+	// Initialize yaegi interpreter
 	i := interp.New(interp.Options{})
 
+	// Eval user submission
 	_, err = i.Eval(userCode)
 	if err != nil {
 		panic(err)
 	}
 
+	// Create package-level function with same name as user submission (eg. main.Sum())
 	testFunc := fmt.Sprintf("main.%s", codeSubmission.Problem)
 	println(testFunc)
+
+	// Eval main package-level function, return symbol
 	v, err := i.Eval(testFunc)
 	if err != nil {
 		panic(err)
 	}
 
+	// ####################################################################
+	// Will have to figure out how to do this dynamically for each test case
+	// ####################################################################
+	// Save symbol with type assertion
 	sum := v.Interface().(func(int, int) int)
+	// ###
+	// End
+	// ###
 
+	// Iterate over example unit test
 	for _, example := range examples {
 		inputJSON := example.Input
 		var data map[string]interface{}
