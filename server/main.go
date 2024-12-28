@@ -35,7 +35,7 @@ func main() {
 	// Seed database with basic info for testing
 	api.SeedFiles(db)
 
-	log.Printf("Database seeded!")
+	// log.Printf("Database seeded!")
 	log.Printf("Testing database query...")
 
 	// Sanity check
