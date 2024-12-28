@@ -16,5 +16,5 @@ type CodeResponse struct {
 	TestCount  int    `json:"testCount"`
 	TestPassed int    `json:"testPassed"`
 	Output     string `json:"output"`
-	Result     string `json:"result"` // "PASSED" if all tests pass, otherwise "FAILED"
+	Result     string `json:"result"`
 }
