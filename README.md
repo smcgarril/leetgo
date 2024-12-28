@@ -1,13 +1,20 @@
 # leetgo
-A learning exercise in Go programming and web development.  
+Solve LeetCode style problems in Go!
+(A learning exercise in Go programming and web development.)
 
 ## Quick Start
 
 ### Run in Container
 
-1. Pull latest version from hub.docker.com
+1. Pull latest versions from hub.docker.com
   ```
   $ docker run -p 8080:8080 docker.io/smcgarril/leetgo-server:1.0.0
+  $ docker run -p 8081:8081 docker.io/smcgarril/leetgo-worker:1.0.0
+  ```
+  
+  or simply use the provided docker-compose.yml
+  ```
+  docker-compose up -d
   ```
 
 2. View in browser
@@ -22,11 +29,28 @@ A learning exercise in Go programming and web development.
   $ cd leetgo/server
   ```
 
-2. Run the program:
+2. Run the server program:
   ```
   $ go run .
   ```
 
-3. View in browser
+3. In new shell cd to worker directory
+  ```
+  $ cd leetgo/worker
+  ```
+
+4. Run the worker service:
+  ```
+  $ go run .
+  ```
+
+%. View in browser
   http://localhost:8080
 
+## Usage
+
+This application is intended to check user-provided solutions to Leetcode-style problems. The server module initializes a SQLite database and seeds it with the necessary tables and a handful of problems (future versions will support user-generated problems).
+
+A simple front-end in vanilla JS provides a prompt and sends user solutions for processing. Because validating solutions requires running arbitrary code, the actual compute is done on a separate worker service with some guardrails in place to prevent abuse (infite loops, improper recursion, fork bombs, resource exhaustion, etc.). 
+
+Future plans include a deployment to fly.io (or similar), implementing a message queue (RabbitMQ or similar), user log in, additional problems, hints and solutions, metrics displays, improved UI, and whatever other things might sound fun to add. This has been a great learning experience and I welcome any and all feedback. Happy coding!
