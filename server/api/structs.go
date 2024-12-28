@@ -24,9 +24,10 @@ type ProblemExample struct {
 
 // CodeReqeuest represents a user generated code snippet with test validation
 type CodeSubmission struct {
-	Code      string `json:"code"`
-	ProblemID string `json:"problem_id"`
-	Problem   string `json:"problem"`
+	Code            string           `json:"code"`
+	ProblemID       string           `json:"problem_id"`
+	Problem         string           `json:"problem"`
+	ProblemExamples []ProblemExample `json:"problem_examples"`
 }
 
 // CodeResponse respresents the results of a test execution
