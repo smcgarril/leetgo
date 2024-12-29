@@ -44,7 +44,7 @@ Solve LeetCode style problems in Go!
   $ go run .
   ```
 
-%. View in browser
+5. View in browser
   http://localhost:8080
 
 ## Usage
