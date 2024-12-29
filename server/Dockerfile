@@ -1,4 +1,3 @@
-# Step 1: Build the Go application
 ARG GO_VERSION=1
 FROM golang:${GO_VERSION}-bookworm as builder
 RUN apt-get update && apt-get install -y \
@@ -12,6 +11,11 @@ COPY . .
 RUN go build -v -o /app .
 
 FROM golang:1.22
+
+# Comment out for local development #
+# ENV WORKER_HOST=https://leetgo-worker.fly.dev
+# ENV WORKER_PORT=443
+# ENV WORKER_PATH=/process-code
 
 WORKDIR /app
 

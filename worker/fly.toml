@@ -1,0 +1,27 @@
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+
+app = 'leetgo-worker'
+primary_region = 'arn'
+
+[build]
+
+[http_service]
+  internal_port = 8081
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 2
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  pids_limit = 60    
+
+[deploy]
+  strategy = 'rolling' 
+
+[scale]
+  app = { min = 2, max = 2 } 
