@@ -13,9 +13,9 @@ RUN go build -v -o /app .
 FROM golang:1.22
 
 # Comment out for local development #
-ENV WORKER_HOST=https://leetgo-worker.fly.dev
-ENV WORKER_PORT=443
-ENV WORKER_PATH=/process-code
+# ENV WORKER_HOST=https://leetgo-worker.fly.dev
+# ENV WORKER_PORT=443
+# ENV WORKER_PATH=/process-code
 
 WORKDIR /app
 
