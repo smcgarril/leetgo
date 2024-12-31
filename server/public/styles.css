@@ -57,7 +57,7 @@ h1 {
 
 /* Left Column */
 .left-column {
-    width: 30%;
+    width: 36%;
     padding: 1em;
     border-right: 1px solid #ddd;
     background-color: #ffffff;
@@ -73,7 +73,7 @@ h1 {
 
 /* Right Column */
 .right-column {
-    width: 70%;
+    width: 65%;
     padding: 1em;
     display: flex;
     flex-direction: column;
@@ -201,4 +201,63 @@ body.dark-mode header {
 
 body.dark-mode .dark-mode-toggle {
     color: #ffffff;
+}
+
+/* Card-like container for results */
+.results-card, .failure-card {
+    background-color: #ffffff; /* White background for contrast */
+    border-radius: 6px; /* Rounded corners */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 0.6em; /* Reduced padding for a more compact design */
+    margin-top: 0.8em; /* Slightly smaller space between sections */
+    animation: fadeIn 0.3s ease-in-out; /* Smooth fade-in effect */
+    border-left: 5px solid #006bb6; /* Accent border on the left */
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Styling for the "Result" text */
+.resultClass {
+    font-size: 1.1em; /* Slightly smaller font */
+    text-transform: uppercase; /* Capitalize PASSED/FAILED */
+    font-weight: bold;
+}
+
+/* Success and failure colors for the result */
+.resultClass.success {
+    color: #388e3c; /* Vibrant green */
+}
+
+.resultClass.failure {
+    color: #e53935; /* Bright red */
+}
+
+/* Failure details heading */
+.failure-card h3 {
+    font-size: 1.2em; /* Moderate size for the heading */
+    margin-bottom: 0.5em; /* Spacing below the heading */
+}
+
+/* Failure details paragraphs */
+.failure-card p {
+    margin: 0.7em 0; /* Tighter spacing between paragraphs */
+    font-size: 0.95em; /* Slightly smaller font for compact design */
+    color: #2c3e50; /* Darker text for readability */
+}
+
+/* Responsiveness for smaller screens */
+@media screen and (max-width: 768px) {
+    .results-card, .failure-card {
+        padding: 0.6em;
+    }
 }

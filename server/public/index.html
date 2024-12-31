@@ -45,16 +45,16 @@
                 <button onclick="runCode()">Run Code</button>
             </div>
             <!-- Hidden results section -->
-            <div id="results" style="display:none;">
+            <div id="results" style="display:none;" class="results-card">
                 <p><strong>Result:</strong> <span class="resultClass" id="result"></span></p>
                 <p>Tests Passed: <span id="testPassed"></span></p>
                 <p>Total Tests: <span id="testCount"></span></p>
             </div>
             <!-- Hidden failure details section -->
-            <div id="failure-details" style="display:none;">
-                <h3>Failure Details:</h3>
-                <p><strong>Input:</strong> <span id="failure-input"></span></p>
-                <p><strong>Expected Output:</strong> <span id="failure-expected"></span></p>
+            <div id="failure-details" style="display:none;" class="failure-card">
+                <h3>Details</h3>
+                <p>Input: <span id="failure-input"></span></p>
+                <p>Expected Output: <span id="failure-expected"></span></p>
                 <p><strong>Actual Output:</strong> <span id="failure-actual"></span></p>
             </div>
         </div>
