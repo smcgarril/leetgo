@@ -15,13 +15,6 @@
 <body>
     <div class="header">
         <h1>LeetGo</h1>
-        <!-- <div class="dark-mode-toggle">
-            <label for="darkModeToggle">Dark Mode</label>
-            <label class="switch">
-                <input type="checkbox" id="darkModeToggle">
-                <span class="slider"></span>
-            </label>
-        </div> -->
         <div class="dark-mode-toggle">
             <button id="darkModeToggle" aria-label="Toggle Dark Mode">
                 <i id="darkModeIcon" class="fa-solid fa-moon"></i>
@@ -51,20 +44,17 @@
             <div id="button-container">
                 <button onclick="runCode()">Run Code</button>
             </div>
-            <div>
-                <strong>Result:</strong> <span class="resultClass" id="result"></span>
-            </div>
-            <div>
-                Tests Passed: <span id="testPassed"></span>
-            </div>
-            <div>
-                Total Tests: <span id="testCount"></span>
+            <!-- Hidden results section -->
+            <div id="results" style="display:none;" class="results-card">
+                <p><strong>Result:</strong> <span class="resultClass" id="result"></span></p>
+                <p>Tests Passed: <span id="testPassed"></span></p>
+                <p>Total Tests: <span id="testCount"></span></p>
             </div>
             <!-- Hidden failure details section -->
-            <div id="failure-details" style="display:none;">
-                <h3>Failure Details:</h3>
-                <p><strong>Input:</strong> <span id="failure-input"></span></p>
-                <p><strong>Expected Output:</strong> <span id="failure-expected"></span></p>
+            <div id="failure-details" style="display:none;" class="failure-card">
+                <h3>Details</h3>
+                <p>Input: <span id="failure-input"></span></p>
+                <p>Expected Output: <span id="failure-expected"></span></p>
                 <p><strong>Actual Output:</strong> <span id="failure-actual"></span></p>
             </div>
         </div>

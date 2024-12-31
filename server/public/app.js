@@ -75,10 +75,24 @@ function displayProblemDescription(problems) {
 
 // Clear results
 function clearResults() {
-    document.getElementById('result').innerText = '';
-    document.getElementById('testPassed').innerText = '';
-    document.getElementById('testCount').innerText = '';
+    const resultsElement = document.getElementById('results');
+    const failureDetailsElement = document.getElementById('failure-details');
+
+    if (resultsElement) {
+        resultsElement.style.display = 'none';
+        document.getElementById('result').innerText = '';
+        document.getElementById('testPassed').innerText = '';
+        document.getElementById('testCount').innerText = '';
+    }
+
+    if (failureDetailsElement) {
+        failureDetailsElement.style.display = 'none';
+        document.getElementById('failure-input').innerText = '';
+        document.getElementById('failure-expected').innerText = '';
+        document.getElementById('failure-actual').innerText = '';
+    }
 }
+
 // Load problem examples
 function renderExamples(examples) {
     console.log("examples is: ", examples);
@@ -118,22 +132,18 @@ function loadProblem() {
     }
 }
 
-// // Dark Mode Toggle
-// const darkModeToggle = document.getElementById('darkModeToggle');
-// darkModeToggle.addEventListener('change', () => {
-//     document.body.classList.toggle('dark-mode', darkModeToggle.checked);
-// });
+// Dark Mode Toggle
 const darkModeToggle = document.getElementById('darkModeToggle');
 const darkModeIcon = document.getElementById('darkModeIcon');
 
 darkModeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode'); // Toggle dark mode class on the body
+    document.body.classList.toggle('dark-mode');
     
     // Toggle between moon and sun icons
     if (document.body.classList.contains('dark-mode')) {
-        darkModeIcon.classList.replace('fa-moon', 'fa-sun'); // Switch to sun
+        darkModeIcon.classList.replace('fa-moon', 'fa-sun');
     } else {
-        darkModeIcon.classList.replace('fa-sun', 'fa-moon'); // Switch to moon
+        darkModeIcon.classList.replace('fa-sun', 'fa-moon');
     }
 });
 
@@ -176,6 +186,12 @@ async function runCode() {
         console.log(data)
 
         if (data.result) {
+            // Show the results
+            const resultsElement = document.getElementById('results');
+            if (resultsElement) {
+                resultsElement.style.display = 'block'; // Show failure details
+            }
+
             // Update result element
             const resultElement = document.getElementById('result');
             resultElement.innerText = data.result.trim();
