@@ -106,3 +106,15 @@ func FormatExpectedOutput(output string) (string, error) {
 	}
 	return "", nil
 }
+
+// Helper function to count number of passing tests
+func CountPassingTests(output string) int {
+	testPassed := 0
+	lines := strings.Split(output, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "PASSED") {
+			testPassed++
+		}
+	}
+	return testPassed
+}

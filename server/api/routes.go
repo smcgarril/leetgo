@@ -25,6 +25,7 @@ func ExecuteCodeHandler(db *sql.DB) http.HandlerFunc {
 
 func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	var codeSubmission CodeSubmission
+	var codeOutput CodeOutput
 
 	// Read the body into a byte slice
 	bodyBytes, err := io.ReadAll(r.Body)
@@ -87,8 +88,59 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Log the worker response for debugging
 	log.Printf("Worker response: %s", string(workerResponseBody))
 
+	// Unmarshal JSON into CodeResponse struct
+	err = json.Unmarshal(workerResponseBody, &codeOutput)
+	if err != nil {
+		http.Error(w, `{"error":"Invalid request"}`, http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("The codeOutput is %v: ", codeOutput)
+
+	// var input string
+	// var expectedOutput string
+	// var actualOutput string
+
+	// if codeOutput.Result == "FAILED" {
+	// 	var testID int
+	// 	fmt.Println("HERE")
+	// 	lines := strings.Split(codeOutput.Output, "\n")
+	// 	for _, line := range lines {
+	// 		if strings.Contains(line, "./temp_code.go") {
+	// 			actualOutput = GetFailureError(line)
+	// 			break
+	// 		}
+	// 		if strings.Contains(line, "FAILED") {
+	// 			re := regexp.MustCompile(`\d+`)
+	// 			id := re.FindString(line)
+	// 			testID, err = strconv.Atoi(id)
+	// 			if err != nil {
+	// 				fmt.Println("Error converting number: ", err)
+	// 				return
+	// 			}
+	// 			actualOutput = GetOutputValue(line)
+	// 			input, expectedOutput = GetInputAndExpectedOutputByID(examples, testID)
+	// 			break
+	// 		}
+	// 	}
+	// }
+
+	input, expectedOutput, actualOutput := BuildResponse(&codeOutput, examples)
+
+	// Prepare the response
+	response := CodeOutput{
+		TestCount:  codeOutput.TestCount,
+		TestPassed: codeOutput.TestPassed,
+		Output:     actualOutput,
+		Input:      input,
+		Expected:   expectedOutput,
+		Result:     codeOutput.Result,
+	}
+
+	log.Printf("Response to front end: %v", response)
+
 	// Forward the worker response to the client
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.StatusCode)
-	w.Write(workerResponseBody)
+	json.NewEncoder(w).Encode(response)
 }

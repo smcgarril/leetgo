@@ -15,8 +15,8 @@ type Problem struct {
 
 // ProblemExample represents a single input to a user function and the expected return
 type ProblemExample struct {
-	ID             string `json:"id"`
-	PromblemID     string `json:"problem_id"`
+	ID             int    `json:"id"`
+	PromblemID     int    `json:"problem_id"`
 	Input          string `json:"input"`
 	InputOrder     string `json:"input_order"`
 	ExpectedOutput string `json:"expected_output"`
@@ -30,10 +30,12 @@ type CodeSubmission struct {
 	ProblemExamples []ProblemExample `json:"problem_examples"`
 }
 
-// CodeResponse respresents the results of a test execution
-type CodeResponse struct {
+// CodeOutput respresents the results of a test execution
+type CodeOutput struct {
 	TestCount  int    `json:"testCount"`
 	TestPassed int    `json:"testPassed"`
 	Output     string `json:"output"`
+	Input      string `json:"input"`
+	Expected   string `json:"expected"`
 	Result     string `json:"result"`
 }
