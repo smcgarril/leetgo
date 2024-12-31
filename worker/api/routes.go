@@ -31,49 +31,47 @@ func ProcessCodeHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(codeResponse)
 }
 
-func processCode(submission CodeSubmission) (CodeResponse, error) {
+func processCode(submission CodeSubmission) (CodeOutput, error) {
 	// Log the retrieved examples
 	log.Printf("Retrieved problem examples: %+v", submission.ProblemExamples)
 
 	// Initialize slice of test calls
 	var testCalls []string
 
-	for i, example := range submission.ProblemExamples {
+	for _, example := range submission.ProblemExamples {
 		inputJSON := example.Input
 		input_order := []string{}
 		err := json.Unmarshal([]byte(example.InputOrder), &input_order)
 		if err != nil {
 			fmt.Println("Error unmarshalling input_order:", err)
-			return CodeResponse{}, err
+			return CodeOutput{}, err
 		}
 
 		formattedArgs, err := FormatArgs(inputJSON, input_order)
 		if err != nil {
 			fmt.Println("Error formatting arguments:", err)
-			return CodeResponse{}, err
+			return CodeOutput{}, err
 		}
-
-		fmt.Printf("The formattedArgs are: %s", formattedArgs)
 
 		outputJSON := example.ExpectedOutput
 		expectedOutput, err := FormatExpectedOutput(outputJSON)
 		if err != nil {
 			fmt.Println("Error formatting expected output:", err)
-			return CodeResponse{}, err
+			return CodeOutput{}, err
 		}
 
-		fmt.Printf("The expectedOutput are: %s", expectedOutput)
+		testID := example.ID
 
 		// Append a single test call to the list
 		testCalls = append(testCalls, fmt.Sprintf(`
 			output%d := %s(%s)
 			expected%d := %s
 			if fmt.Sprint(output%d) == fmt.Sprint(expected%d) {
-				results = append(results, "PASSED")
+				results = append(results, Result{%d, "PASSED", ""})
 			} else {
-				results = append(results, "FAILED")
+				results = append(results, Result{%d, "FAILED", fmt.Sprint(output%d)})
 			}
-		`, i+1, submission.Problem, formattedArgs, i+1, expectedOutput, i+1, i+1))
+		`, testID, submission.Problem, formattedArgs, testID, expectedOutput, testID, testID, testID, testID, testID))
 
 	}
 
@@ -83,17 +81,22 @@ func processCode(submission CodeSubmission) (CodeResponse, error) {
 		import (
 			"fmt"
 		)
+		type Result struct {
+			Test int
+			Result string
+			Output string
+		}
 
 		// User function
 		%s
 
 		func main() {
-			results := []string{}
+			var results []Result
 
 			%s
 
-			for i, result := range results {
-				fmt.Printf("Test %%d: %%s\n", i+1, result)
+			for _, result := range results {
+				fmt.Printf("Test %%d: %%s, Output: %%s\n", result.Test, result.Result, result.Output)
 			}
 		}`
 
@@ -106,7 +109,7 @@ func processCode(submission CodeSubmission) (CodeResponse, error) {
 	err := os.WriteFile(codeFile, []byte(harnessCode), 0644)
 	if err != nil {
 		fmt.Println("Failed to save code:", err)
-		return CodeResponse{}, err
+		return CodeOutput{}, err
 	}
 
 	// Execute the Go code
@@ -115,36 +118,26 @@ func processCode(submission CodeSubmission) (CodeResponse, error) {
 	if err != nil {
 		fmt.Printf("Error executing test harness: %v\n", err)
 	}
-	fmt.Printf("Test return: %s\n", testReturn)
 
 	// Delete temp_code.go
 	err = os.Remove(codeFile)
 	if err != nil {
-		fmt.Printf("Error deleting tmp file: ", err)
-		return CodeResponse{}, err
+		fmt.Println("Error deleting tmp file: ", err)
+		return CodeOutput{}, err
 	}
 
 	// Process the output to count PASSED and FAILED
-	testCount := 0
-	testPassed := 0
 	output := string(testReturn)
-	result := "PASSED"
+	testCount := len(submission.ProblemExamples)
+	testPassed := CountPassingTests(output)
 
-	// Split the output into lines and count PASSED and FAILED results
-	lines := strings.Split(output, "\n")
-	for _, line := range lines {
-		if strings.Contains(line, "Test") {
-			testCount++
-			if strings.Contains(line, "PASSED") {
-				testPassed++
-			} else {
-				result = "FAILED"
-			}
-		}
+	result := "FAILED"
+	if testCount == testPassed {
+		result = "PASSED"
 	}
 
 	// Prepare the response
-	response := CodeResponse{
+	response := CodeOutput{
 		TestCount:  testCount,
 		TestPassed: testPassed,
 		Output:     output,
@@ -153,6 +146,7 @@ func processCode(submission CodeSubmission) (CodeResponse, error) {
 
 	// Print response for debugging
 	fmt.Println(response)
+	log.Printf("Response: %+v", response)
 
 	return response, nil
 }

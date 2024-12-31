@@ -1,27 +1,33 @@
-version: '3.8'
-
 services:
-  server:
-    image: smcgarril/leetgo-server:1.0.1
+  leetgo-server:
+    image: smcgarril/leetgo-server:1.0.2
     restart: always
     build: ./server
     environment:
-      - WORKER_HOST=http://localhost
+      - WORKER_HOST=http://leetgo-worker
       - WORKER_PORT=8081
       - WORKER_PATH=/process-code
+    networks:
+      - leetgo-network
     ports:
       - "8080:8080"
     depends_on:
-      - worker
+      - leetgo-worker
 
-  worker:
-    image: smcgarril/leetgo-worker:1.0.1
+  leetgo-worker:
+    image: smcgarril/leetgo-worker:1.0.2
     restart: always
     build: ./worker
+    networks:
+      - leetgo-network
     ports:
       - "8081:8081"
     pids_limit: 60
     cpus: 1
     mem_limit: 150M
+
+networks:
+  leetgo-network:
+    driver: bridge
 
 

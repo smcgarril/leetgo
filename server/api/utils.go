@@ -3,6 +3,9 @@ package api
 import (
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 // Retrieve worker service URL:PORT from env variables
@@ -23,4 +26,66 @@ func GetWorkerURL() string {
 	}
 
 	return fmt.Sprintf("%s:%s%s", workerHost, workerPort, workerPath)
+}
+
+// Function to return input, expectedOutput, and actualOutput
+func BuildResponse(codeOutput *CodeOutput, examples []ProblemExample) (input, expectedOutput, actualOutput string) {
+	if codeOutput.Result == "FAILED" {
+		fmt.Println("HERE")
+		lines := strings.Split(codeOutput.Output, "\n")
+		for _, line := range lines {
+			if strings.Contains(line, "./temp_code.go") {
+				actualOutput = getFailureError(line)
+				break
+			}
+			if strings.Contains(line, "FAILED") {
+				re := regexp.MustCompile(`\d+`)
+				id := re.FindString(line)
+				testID, err := strconv.Atoi(id)
+				if err != nil {
+					fmt.Println("Error converting number: ", err)
+					return
+				}
+				actualOutput = getOutputValue(line)
+				input, expectedOutput = getInputAndExpectedOutputByID(examples, testID)
+				break
+			}
+		}
+	}
+	return input, expectedOutput, actualOutput
+}
+
+// Function to find Input and ExpectedOutput by ID
+func getInputAndExpectedOutputByID(examples []ProblemExample, id int) (string, string) {
+	for _, example := range examples {
+		if example.ID == id {
+			return example.Input, example.ExpectedOutput
+		}
+	}
+	return "", ""
+}
+
+// Helper function to retrieve the value provided after Output
+func getOutputValue(line string) string {
+	prefix := "Output: "
+	startIndex := strings.Index(line, prefix)
+	if startIndex == -1 {
+		return ""
+	}
+
+	output := line[startIndex+len(prefix):]
+
+	return strings.TrimSpace(output)
+}
+
+// Helper function to retrieve error after code file & line numbers
+func getFailureError(line string) string {
+	re := regexp.MustCompile(`.*?:\d+:\d+: (.+)`)
+	match := re.FindStringSubmatch(line)
+	if len(match) > 1 {
+		errorDetail := match[1]
+		return errorDetail
+	} else {
+		return ""
+	}
 }

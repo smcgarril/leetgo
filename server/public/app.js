@@ -179,26 +179,70 @@ async function runCode() {
             // Update result element
             const resultElement = document.getElementById('result');
             resultElement.innerText = data.result.trim();
+            
             // Add success or failure class
             if (data.result === "PASSED") {
                 resultElement.classList.remove("failure");
                 resultElement.classList.add("success");
-            } else {
+                
+                // Hide the failure details if result is PASSED
+                const failureDetailsElement = document.getElementById('failure-details');
+                if (failureDetailsElement) {
+                    failureDetailsElement.style.display = 'none'; // Hide failure details
+                }
+            } else if (data.result === "FAILED") {
                 resultElement.classList.remove("success");
                 resultElement.classList.add("failure");
+                
+                // Show the failure details if result is FAILED
+                const failureDetailsElement = document.getElementById('failure-details');
+                if (failureDetailsElement) {
+                    failureDetailsElement.style.display = 'block'; // Show failure details
+                }
+                
+                // Parse and format the input if it exists, otherwise render an empty string
+                let formattedInput = "";
+                if (data.input || data.input === 0) {
+                    try {
+                        const parsedInput = JSON.parse(data.input);
+                        formattedInput = Object.entries(parsedInput)
+                            .map(([key, value]) => `${key} = ${value}`)
+                            .join(', ');
+                    } catch (e) {
+                        formattedInput = "";
+                    }
+                }
+
+                // Parse and extract the expected output value if it exists, otherwise render an empty string
+                let formattedExpectedOutput = "";
+                if (data.expected) {
+                    try {
+                        const parsedExpectedOutput = JSON.parse(data.expected);
+                        formattedExpectedOutput = Object.values(parsedExpectedOutput).join(', ');
+                    } catch (e) {
+                        formattedExpectedOutput = "";
+                    }
+                }
+
+                // Update failure details
+                document.getElementById('failure-input').innerText = formattedInput;
+                document.getElementById('failure-expected').innerText = formattedExpectedOutput;
+                document.getElementById('failure-actual').innerText = data.output;
             }
         } else {
             document.getElementById('result').innerText = 'No result received';
         }
-        if (data.testPassed) {
+        
+        if (data.testPassed || data.testPassed === 0) {
             document.getElementById('testPassed').innerText = data.testPassed;
         } else {
-            document.getElementById('result').innerText = 'No result received';
+            document.getElementById('testPassed').innerText = 'No test passed information received';
         }
+        
         if (data.testCount) {
             document.getElementById('testCount').innerText = data.testCount;
         } else {
-            document.getElementById('result').innerText = 'No result received';
+            document.getElementById('testCount').innerText = 'No test count received';
         }
 
     } catch (error) {
