@@ -109,6 +109,43 @@ VALUES
 (8, 3, '{"nums": [3, 2, 4], "target": 6}', '["nums", "target"]', '{"indices": [1, 2]}'),
 (9, 3, '{"nums": [3, 3], "target": 6}', '["nums", "target"]', '{"indices": [0, 1]}');
 
+-- Insert "Valid Parentheses" problem
+INSERT OR IGNORE INTO problems (id, name, short_description, long_description, problem_seed, examples, difficulty) 
+VALUES (
+    4, 
+    'ValidParentheses', 
+    'Determine if the input string of parentheses is valid.',
+    'Given a string s containing just the characters <code>"("</code>, <code>")"</code>, <code>"{"</code>, <code>"}"</code>, <code>"["</code>, and <code>"]"</code>, determine if the input string is valid.<br></br>An input string is valid if:<br></br>1. Open brackets must be closed by the same type of brackets.<br></br>2. Open brackets must be closed in the correct order.<br></br>3. Every close bracket has a corresponding open bracket of the same type.',
+    'func ValidParentheses(s string) bool {
+    
+}', 
+    '[
+    {
+        "input": "s = \\"()\\"",
+        "output": "true",
+        "explanation": "The open bracket \\"(\\" is closed by \\")\\"."
+    },
+    {
+        "input": "s = \\"()[]{}\\"",
+        "output": "true",
+        "explanation": "All open brackets are followed by their corresponding closing bracket."
+    },
+    {
+        "input": "s = \\"(]\\"",
+        "output": "false",
+        "explanation": "\\"(\\" is not closed by \\"]\\"."
+    }
+]',
+    'easy'
+);
+
+-- Insert test cases for the "Valid Parentheses" problem
+INSERT OR IGNORE INTO problem_examples (id, problem_id, input, input_order, expected_output)
+VALUES
+(10, 4, '{"s": "()"}', '["s"]', '{"result": true}'),
+(11, 4, '{"s": "()[]{}"', '["s"]', '{"result": true}'),
+(12, 4, '{"s": "(]"', '["s"]', '{"result": false}');
+
 -- Insert sample user
 INSERT OR IGNORE INTO users (id, username, email, password)
 VALUES (1, 'Test User', 'test@nowhere.com', '123456');
