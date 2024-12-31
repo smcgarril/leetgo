@@ -227,13 +227,26 @@ h1 {
     color: #2c3e50; /* Darker text for readability */
 }
 
-/* Responsiveness for smaller screens */
+/* General Mobile Responsiveness */
 @media screen and (max-width: 768px) {
     .results-card, .failure-card {
         padding: 0.6em;
+        margin: 0.5em; /* Add margin for better spacing */
+        width: calc(100% - 1em); /* Ensure cards take up most of the screen width */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Adjust shadow for smaller screens */
+        font-size: 0.9em; /* Reduce font size for better fit */
     }
 }
 
+/* Very Small Screens */
+@media screen and (max-width: 480px) {
+    .results-card, .failure-card {
+        padding: 0.5em;
+        margin: 0.4em;
+        width: calc(100% - 0.8em);
+        font-size: 0.85em; /* Further reduce font size for compactness */
+    }
+}
 
 
 /* Dark Mode */
