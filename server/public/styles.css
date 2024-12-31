@@ -174,34 +174,6 @@ h1 {
     }
 }
 
-/* Dark Mode */
-body.dark-mode {
-    background-color: #181818; /* Very dark gray */
-    color: #d4d4d4; /* Light gray */
-}
-
-body.dark-mode .left-column,
-body.dark-mode .right-column {
-    background-color: #242424; /* Darker gray for contrast */
-    border-color: #444;
-}
-
-body.dark-mode #editor-container {
-    background-color: #2c2c2c; /* Dark gray */
-}
-
-body.dark-mode #editor {
-    color: #f5f5f5; /* Near white */
-}
-
-body.dark-mode header {
-    background-color: #1a73e8; /* Bright blue */
-    color: #ffffff;
-}
-
-body.dark-mode .dark-mode-toggle {
-    color: #ffffff;
-}
 
 /* Card-like container for results */
 .results-card, .failure-card {
@@ -259,5 +231,81 @@ body.dark-mode .dark-mode-toggle {
 @media screen and (max-width: 768px) {
     .results-card, .failure-card {
         padding: 0.6em;
+    }
+}
+
+
+
+/* Dark Mode */
+body.dark-mode {
+    background-color: #181818; /* Very dark gray */
+    color: #d4d4d4; /* Light gray */
+}
+
+body.dark-mode .left-column,
+body.dark-mode .right-column {
+    background-color: #242424; /* Darker gray for contrast */
+    border-color: #444;
+}
+
+body.dark-mode #editor-container {
+    background-color: #2c2c2c; /* Dark gray */
+}
+
+body.dark-mode #editor {
+    color: #f5f5f5; /* Near white */
+}
+
+body.dark-mode header {
+    background-color: #1a73e8; /* Bright blue */
+    color: #ffffff;
+}
+
+body.dark-mode .dark-mode-toggle {
+    color: #ffffff;
+}
+
+/* Results and failure cards in dark mode */
+body.dark-mode .results-card, 
+body.dark-mode .failure-card {
+    background-color: #1e1e1e; /* Dark gray for the cards */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5); /* Slightly stronger shadow */
+    color: #f5f5f5; /* Light text for contrast */
+}
+
+/* Adjust the box-shadow colors in dark mode */
+body.dark-mode .results-card.success {
+    box-shadow: 0 3px 6px rgba(56, 142, 60, 0.8); /* Vibrant green for PASSING */
+    border-left: 5px solid #388e3c; /* Green accent */
+}
+
+body.dark-mode .results-card.failure {
+    box-shadow: 0 3px 6px rgba(229, 57, 53, 0.8); /* Bright red for FAILING */
+    border-left: 5px solid #e53935; /* Red accent */
+}
+
+body.dark-mode .failure-card {
+    border-left: 5px solid #006bb6; /* Blue accent */
+}
+
+/* Dark mode failure details heading */
+body.dark-mode .resultClass.failure {
+    color: #e57373; /* Softer red for failure headings */
+}
+
+/* Adjustments for dark mode failure details paragraphs */
+body.dark-mode .failure-card p {
+    color: #d4d4d4; /* Light gray text */
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
