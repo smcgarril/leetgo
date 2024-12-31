@@ -49,59 +49,6 @@ h1 {
     color: #ff9800; /* Bright orange on hover */
 }
 
-/* .dark-mode-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    font-size: 0.9em;
-    color: #333333;
-} */
-
-/* .switch {
-    position: relative;
-    display: inline-block;
-    width: 34px;
-    height: 20px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #bbb;
-    transition: 0.4s;
-    border-radius: 20px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
-}
-
-input:checked + .slider {
-    background-color: #ff9800;
-}
-
-input:checked + .slider:before {
-    transform: translateX(14px);
-} */
-
 .container {
     display: flex;
     width: 100%;
@@ -137,7 +84,7 @@ input:checked + .slider:before {
 
 /* Code Editor */
 #editor {
-    height: 400px;
+    height: 300px;
     border: 1px solid #ccc;
     font-family: monospace;
     padding: 1em;
