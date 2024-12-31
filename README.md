@@ -18,8 +18,8 @@ To run locally you will need to start both the server and worker services. This 
 
 1. Pull latest [server](https://hub.docker.com/r/smcgarril/leetgo-server) and [worker](https://hub.docker.com/r/smcgarril/leetgo-worker) images from hub.docker.com
   ```
-  $ docker run -p 8080:8080 docker.io/smcgarril/leetgo-server:1.0.0
-  $ docker run -p 8081:8081 docker.io/smcgarril/leetgo-worker:1.0.0
+  $ docker run -p 8080:8080 docker.io/smcgarril/leetgo-server:1.0.1
+  $ docker run -p 8081:8081 docker.io/smcgarril/leetgo-worker:1.0.1
   ```
   
   or simply use the provided docker-compose.yml
