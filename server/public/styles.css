@@ -29,12 +29,35 @@ h1 {
 .dark-mode-toggle {
     display: flex;
     align-items: center;
+    margin-left: auto; /* Push to the right */
+    font-size: 1.2em; /* Adjust icon size */
+}
+
+.dark-mode-toggle button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5em;
+    transition: color 0.3s ease;
+}
+
+.dark-mode-toggle button:hover {
+    color: #ff9800; /* Bright orange on hover */
+}
+
+/* .dark-mode-toggle {
+    display: flex;
+    align-items: center;
     gap: 0.5em;
     font-size: 0.9em;
     color: #333333;
-}
+} */
 
-.switch {
+/* .switch {
     position: relative;
     display: inline-block;
     width: 34px;
@@ -72,12 +95,12 @@ h1 {
 }
 
 input:checked + .slider {
-    background-color: #ff9800; /* Bright orange for active state */
+    background-color: #ff9800;
 }
 
 input:checked + .slider:before {
     transform: translateX(14px);
-}
+} */
 
 .container {
     display: flex;
@@ -155,6 +178,53 @@ input:checked + .slider:before {
 
 .resultClass.failure {
     color: #e53935; /* Bright red */
+}
+
+/* Media Queries for Responsiveness */
+@media screen and (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .left-column,
+    .right-column {
+        width: 100%;
+        box-shadow: none;
+    }
+
+    #editor {
+        height: 300px;
+    }
+
+    #button-container button {
+        width: 100%;
+    }
+
+    .dark-mode-toggle {
+        justify-content: left;
+    }
+
+    .dark-mode-toggle button:hover {
+        color: inherit; 
+    }
+}
+
+@media screen and (max-width: 480px) {
+    header {
+        padding: 0.5em;
+    }
+
+    h1 {
+        font-size: 1.2em;
+    }
+
+    .dark-mode-toggle {
+        font-size: 0.8em;
+    }
+
+    #editor {
+        height: 200px;
+    }
 }
 
 /* Dark Mode */

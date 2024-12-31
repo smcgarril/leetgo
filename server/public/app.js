@@ -118,10 +118,23 @@ function loadProblem() {
     }
 }
 
-// Dark Mode Toggle
+// // Dark Mode Toggle
+// const darkModeToggle = document.getElementById('darkModeToggle');
+// darkModeToggle.addEventListener('change', () => {
+//     document.body.classList.toggle('dark-mode', darkModeToggle.checked);
+// });
 const darkModeToggle = document.getElementById('darkModeToggle');
-darkModeToggle.addEventListener('change', () => {
-    document.body.classList.toggle('dark-mode', darkModeToggle.checked);
+const darkModeIcon = document.getElementById('darkModeIcon');
+
+darkModeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode'); // Toggle dark mode class on the body
+    
+    // Toggle between moon and sun icons
+    if (document.body.classList.contains('dark-mode')) {
+        darkModeIcon.classList.replace('fa-moon', 'fa-sun'); // Switch to sun
+    } else {
+        darkModeIcon.classList.replace('fa-sun', 'fa-moon'); // Switch to moon
+    }
 });
 
 // Send code input to back end

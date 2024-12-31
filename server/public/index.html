@@ -6,6 +6,7 @@
     <title>LeetGo</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/mode/go/go.min.js"></script>
@@ -14,12 +15,17 @@
 <body>
     <div class="header">
         <h1>LeetGo</h1>
-        <div class="dark-mode-toggle">
+        <!-- <div class="dark-mode-toggle">
             <label for="darkModeToggle">Dark Mode</label>
             <label class="switch">
                 <input type="checkbox" id="darkModeToggle">
                 <span class="slider"></span>
             </label>
+        </div> -->
+        <div class="dark-mode-toggle">
+            <button id="darkModeToggle" aria-label="Toggle Dark Mode">
+                <i id="darkModeIcon" class="fa-solid fa-moon"></i>
+            </button>
         </div>
     </div>
     <div class="container">
