@@ -1,6 +1,6 @@
 services:
   leetgo-server:
-    image: smcgarril/leetgo-server:1.0.2
+    image: smcgarril/leetgo-server:1.0.3
     restart: always
     build: ./server
     environment:
@@ -15,7 +15,7 @@ services:
       - leetgo-worker
 
   leetgo-worker:
-    image: smcgarril/leetgo-worker:1.0.2
+    image: smcgarril/leetgo-worker:1.0.3
     restart: always
     build: ./worker
     networks:
