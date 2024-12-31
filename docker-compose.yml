@@ -1,6 +1,6 @@
 services:
   leetgo-server:
-    image: smcgarril/leetgo-server:1.0.3
+    image: smcgarril/leetgo-server:1.0.4
     restart: always
     build: ./server
     environment:
