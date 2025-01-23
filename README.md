@@ -7,7 +7,7 @@ Solve LeetCode style problems in Go!\
 
 This application is intended to check user-provided solutions to Leetcode-style problems. The server module initializes a SQLite database and seeds it with the necessary tables and a handful of problems (future versions will support user-generated problems).
 
-A simple front-end in vanilla JS provides a prompt and sends user solutions for processing. Because validating solutions requires running arbitrary code, the actual compute is done on a separate worker service with some guardrails in place to prevent abuse (infite loops, improper recursion, fork bombs, resource exhaustion, etc.). 
+A simple front-end in vanilla JS provides a prompt and sends user solutions for processing. Because validating solutions requires running arbitrary code, the actual compute is done on a separate worker service with some guardrails in place to prevent abuse (infinite loops, improper recursion, fork bombs, resource exhaustion, etc.). 
 
 Future plans include implementing a messaging queue (RabbitMQ or similar), user log in, additional problems, hints and solutions, metrics displays, improved UI (mobile-friendly), and whatever other things might sound fun to add. This has been a great learning experience and I welcome any and all feedback. Happy coding!
 
