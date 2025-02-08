@@ -1,280 +1,21 @@
-const initialCode = 
-`func main() {
+const initialCode = `func main() {
     fmt.Println("Welcome to LeetGo!")
 }`;
 
 let editor;
 let currentProblem = null;
 
-// Seed editor with welcome message
-function seedEditor(data) {
-    editor.setValue(data);
+document.addEventListener("DOMContentLoaded", init);
+
+// Initialize the editor and fetch the problem list
+function init() {
+    initializeEditor();
+    setupDarkMode();
+    fetchProblemList();
 }
 
-// Function to fetch problems from the backend
-async function fetchProblems() {
-    try {
-        const response = await fetch('/problems');
-        if (!response.ok) {
-            throw new Error("Failed to fetch problems");
-        }
-
-        const problems = await response.json();
-        renderProblems(problems);
-    } catch (error) {
-        console.error('Error fetching problems:', error);
-    }
-}
-
-// Function to render the fetched problems in the DOM as a dropdown
-function renderProblems(problems) {
-    const problemsDiv = document.getElementById('problems');
-    problemsDiv.innerHTML = '';
-
-    // Create the dropdown element
-    const select = document.createElement('select');
-    select.id = 'problem-select';
-    select.onchange = () => displayProblemDescription(problems);
-
-    // Add the default "Select a problem" option
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    defaultOption.innerText = 'Select a problem';
-    select.appendChild(defaultOption);
-
-    // Add an option for each problem
-    problems.forEach(problem => {
-        const option = document.createElement('option');
-        option.value = problem.id;
-        option.innerText = problem.name;
-        select.appendChild(option);
-    });
-
-    problemsDiv.appendChild(select);
-}
-
-// Display problem description in left hand column
-function displayProblemDescription(problems) {
-    const select = document.getElementById('problem-select');
-    const selectedProblemId = select.value;
-
-    currentProblem = problems.find(p => p.id === selectedProblemId);
-
-    const descriptionDiv = document.getElementById('problem-description');
-    if (currentProblem) {
-        descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.long_description}</p>`;
-        renderExamples(currentProblem.examples);
-        loadProblem();
-        clearResults();
-    } else {
-        descriptionDiv.innerHTML = '';
-    }
-}
-
-// Clear results
-function clearResults() {
-    const resultsElement = document.getElementById('results');
-    const failureDetailsElement = document.getElementById('failure-details');
-
-    if (resultsElement) {
-        resultsElement.style.display = 'none';
-        document.getElementById('result').innerText = '';
-        document.getElementById('testPassed').innerText = '';
-        document.getElementById('testCount').innerText = '';
-    }
-
-    if (failureDetailsElement) {
-        failureDetailsElement.style.display = 'none';
-        document.getElementById('failure-input').innerText = '';
-        document.getElementById('failure-expected').innerText = '';
-        document.getElementById('failure-actual').innerText = '';
-    }
-}
-
-// Load problem examples
-function renderExamples(examples) {
-    console.log("examples is: ", examples);
-    try {
-        examples = JSON.parse(examples);
-    } catch (error) {
-        console.error("Failed to parse examples:", error);
-    }
-
-    const examplesDiv = document.getElementById('examples');
-    examplesDiv.innerHTML = ''; // Clear previous examples
-
-    // Check if examples is an array
-    if (Array.isArray(examples)) {
-        examples.forEach((example, index) => {
-            const exampleContainer = document.createElement('div');
-            exampleContainer.style.marginBottom = '1em';
-
-            exampleContainer.innerHTML = `
-                <p><strong>Example ${index + 1}:</strong></p>
-                <p style="margin-left: 1em;">Input: ${example.input}</p>
-                <p style="margin-left: 1em;">Output: ${example.output}</p>
-                <p style="margin-left: 1em;">Explanation: ${example.explanation}</p>
-            `;
-
-            examplesDiv.appendChild(exampleContainer);
-        });
-    } else {
-        console.error("Examples is not an array:", examples);
-    }
-}
-
-// Function to load selected problem into the editor
-function loadProblem() {
-    if (currentProblem) {
-        editor.setValue(currentProblem.problem_seed);
-    }
-}
-
-// Dark Mode Toggle
-const darkModeToggle = document.getElementById('darkModeToggle');
-const darkModeIcon = document.getElementById('darkModeIcon');
-
-darkModeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    
-    // Toggle between moon and sun icons
-    if (document.body.classList.contains('dark-mode')) {
-        darkModeIcon.classList.replace('fa-moon', 'fa-sun');
-    } else {
-        darkModeIcon.classList.replace('fa-sun', 'fa-moon');
-    }
-});
-
-// Send code input to back end
-async function runCode() {
-    if (!currentProblem) {
-        alert("Please select a problem first.");
-        return;
-    }
-
-    const code = editor.getValue();
-
-    const problem_id = currentProblem.id;
-    const problem = currentProblem.name;
-
-    try {
-        const payload = {
-            code: code,    
-            problem_id: problem_id,
-            problem: problem
-        };
-
-        console.log(payload);
-        console.log(JSON.stringify({ payload }));
-
-        const response = await fetch('/execute', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-            console.log(response);
-            throw new Error('Failed to execute code');
-        }
-
-        const rawText = await response.text();
-        console.log(rawText)
-        const data = JSON.parse(rawText);
-        console.log(data)
-
-        if (data.result) {
-            // Show the results
-            const resultsElement = document.getElementById('results');
-            if (resultsElement) {
-                resultsElement.style.display = 'block'; // Show failure details
-            }
-
-            // Update result element
-            const resultElement = document.getElementById('result');
-            resultElement.innerText = data.result.trim();
-            
-            // Add success or failure class
-            if (data.result === "PASSED") {
-                resultElement.classList.remove("failure");
-                resultElement.classList.add("success");
-                
-                // Hide the failure details if result is PASSED
-                const failureDetailsElement = document.getElementById('failure-details');
-                if (failureDetailsElement) {
-                    failureDetailsElement.style.display = 'none'; // Hide failure details
-                }
-            } else if (data.result === "FAILED") {
-                resultElement.classList.remove("success");
-                resultElement.classList.add("failure");
-                
-                // Show the failure details if result is FAILED
-                const failureDetailsElement = document.getElementById('failure-details');
-                if (failureDetailsElement) {
-                    failureDetailsElement.style.display = 'block'; // Show failure details
-                }
-                
-                // Parse and format the input if it exists, otherwise render an empty string
-                let formattedInput = "";
-                if (data.input || data.input === 0) {
-                    try {
-                        const parsedInput = JSON.parse(data.input);
-                        formattedInput = Object.entries(parsedInput)
-                            .map(([key, value]) => `${key} = ${value}`)
-                            .join(', ');
-                    } catch (e) {
-                        formattedInput = "";
-                    }
-                }
-
-                // Parse and extract the expected output value if it exists, otherwise render an empty string
-                let formattedExpectedOutput = "";
-                if (data.expected) {
-                    try {
-                        const parsedExpectedOutput = JSON.parse(data.expected);
-                        formattedExpectedOutput = Object.values(parsedExpectedOutput).join(', ');
-                    } catch (e) {
-                        formattedExpectedOutput = "";
-                    }
-                }
-
-                // Update failure details
-                document.getElementById('failure-input').innerText = formattedInput;
-                document.getElementById('failure-expected').innerText = formattedExpectedOutput;
-                document.getElementById('failure-actual').innerText = data.output;
-            }
-        } else {
-            document.getElementById('result').innerText = 'No result received';
-        }
-        
-        if (data.testPassed || data.testPassed === 0) {
-            document.getElementById('testPassed').innerText = data.testPassed;
-        } else {
-            document.getElementById('testPassed').innerText = 'No test passed information received';
-        }
-        
-        if (data.testCount) {
-            document.getElementById('testCount').innerText = data.testCount;
-        } else {
-            document.getElementById('testCount').innerText = 'No test count received';
-        }
-
-    } catch (error) {
-        console.error('Error running code:', error);
-        document.getElementById('result').innerText = 'Error running code: ' + error.message;
-    }
-}
-
-
-// Call fetchProblems when the page loads
-fetchProblems();
-
-document.addEventListener("DOMContentLoaded", function () {
-    fetchProblems();
-
-    // Initialize CodeMirror editor for the user to input code
+// Initialize CodeMirror editor
+function initializeEditor() {
     editor = CodeMirror(document.getElementById('editor'), {
         mode: 'text/x-go',
         lineNumbers: true,
@@ -282,6 +23,244 @@ document.addEventListener("DOMContentLoaded", function () {
         indentUnit: 4,
         tabSize: 4,
     });
-
     seedEditor(initialCode);
-});
+}
+
+// Seed editor with initial or problem seed code
+function seedEditor(data) {
+    editor.setValue(data);
+}
+
+// Fetch problem names and IDs from the backend
+async function fetchProblemList() {
+    try {
+        const response = await fetch('/problems/names');
+        if (!response.ok) throw new Error("Failed to fetch problem list");
+        
+        const problemList = await response.json();
+        renderProblemsDropdown(problemList);
+    } catch (error) {
+        logError('Error fetching problem list:', error);
+    }
+}
+
+// Render the dropdown with problem names
+function renderProblemsDropdown(problems) {
+    const problemsDiv = document.getElementById('problems');
+    problemsDiv.innerHTML = '';
+
+    const select = createDropdown(problems);
+    problemsDiv.appendChild(select);
+}
+
+// Create a dropdown menu for problem selection
+function createDropdown(problems) {
+    const select = document.createElement('select');
+    select.id = 'problem-select';
+    select.onchange = () => fetchProblemDetails(select.value);
+
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    defaultOption.innerText = 'Select a problem';
+    select.appendChild(defaultOption);
+
+    problems.forEach(problem => {
+        const option = document.createElement('option');
+        option.value = problem.id;
+        option.innerText = problem.name;
+        select.appendChild(option);
+    });
+
+    return select;
+}
+
+// Fetch full problem details when a user selects a problem
+async function fetchProblemDetails(problemId) {
+    if (!problemId) return;
+
+    try {
+        const response = await fetch(`/problems/${problemId}`);
+        if (!response.ok) throw new Error("Failed to fetch problem details");
+        
+        const problem = await response.json();
+        currentProblem = problem[0];
+
+        displayProblemDetails(currentProblem);   
+        loadProblemSeed(currentProblem.problem_seed);
+        clearResults();
+    } catch (error) {
+        logError('Error fetching problem details:', error);
+    }
+}
+
+// Display the selected problem's details and examples
+function displayProblemDetails(problem) {
+    const descriptionDiv = document.getElementById('problem-description');
+    if (problem) {
+        descriptionDiv.innerHTML = `<h3>${problem.name}</h3><p>${problem.long_description}</p>`;
+        renderExamples(problem.examples);
+    } else {
+        descriptionDiv.innerHTML = '';
+    }
+}
+
+// Load problem seed code into the editor
+function loadProblemSeed(seedCode) {
+    seedEditor(seedCode);
+}
+
+// Render examples for the selected problem
+function renderExamples(examples) {
+    const examplesDiv = document.getElementById('examples');
+    examplesDiv.innerHTML = '';
+
+    try {
+        const parsedExamples = JSON.parse(examples);
+        if (Array.isArray(parsedExamples)) {
+            parsedExamples.forEach((example, index) => {
+                const exampleHtml = `
+                    <div style="margin-bottom: 1em;">
+                        <p><strong>Example ${index + 1}:</strong></p>
+                        <p style="margin-left: 1em;">Input: ${example.input}</p>
+                        <p style="margin-left: 1em;">Output: ${example.output}</p>
+                        <p style="margin-left: 1em;">Explanation: ${example.explanation}</p>
+                    </div>`;
+                examplesDiv.insertAdjacentHTML('beforeend', exampleHtml);
+            });
+        } else {
+            throw new Error("Examples data is not an array");
+        }
+    } catch (error) {
+        logError("Failed to parse examples:", error);
+    }
+}
+
+// Clear previous results from the UI
+function clearResults() {
+    ['results', 'failure-details'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.style.display = 'none';
+    });
+
+    ['result', 'testPassed', 'testCount', 'failure-input', 'failure-expected', 'failure-actual'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.innerText = '';
+    });
+}
+
+// Set up dark mode toggle
+function setupDarkMode() {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const darkModeIcon = document.getElementById('darkModeIcon');
+
+    const isDarkMode = localStorage.getItem("darkMode") === "true";
+    if (isDarkMode) document.body.classList.add("dark-mode");
+
+    darkModeToggle.addEventListener('click', () => toggleDarkMode(darkModeIcon));
+}
+
+// Toggle dark mode and update localStorage
+function toggleDarkMode(icon) {
+    const darkModeEnabled = document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", darkModeEnabled);
+
+    icon.classList.replace(
+        darkModeEnabled ? 'fa-moon' : 'fa-sun',
+        darkModeEnabled ? 'fa-sun' : 'fa-moon'
+    );
+}
+
+// Run the user-submitted code
+async function runCode() {
+    if (!currentProblem) return alert("Please select a problem first.");
+
+    const code = editor.getValue();
+    const payload = {
+        code,
+        problem_id: currentProblem.id,
+        problem: currentProblem.name,
+    };
+
+    try {
+        const response = await fetch('/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) throw new Error('Failed to execute code');
+        
+        const data = await response.json();
+        displayResults(data);
+    } catch (error) {
+        logError('Error running code:', error);
+        document.getElementById('result').innerText = `Error running code: ${error.message}`;
+    }
+}
+
+// Display code execution results
+function displayResults(data) {
+    const resultsElement = document.getElementById('results');
+    const resultElement = document.getElementById('result');
+    const failureDetailsElement = document.getElementById('failure-details');
+
+    resultsElement.style.display = 'block';
+
+    resultElement.innerText = data.result.trim();
+
+    resultElement.classList.remove('success', 'failure');
+
+    if (data.result === "PASSED") {
+        resultElement.classList.add('success');
+        failureDetailsElement.style.display = 'none';
+    } else if (data.result === "FAILED") {
+        resultElement.classList.add('failure');
+        failureDetailsElement.style.display = 'block'; 
+        displayFailureDetails(data);
+    }
+
+    document.getElementById('testPassed').innerText = data.testPassed ?? 'N/A';
+    document.getElementById('testCount').innerText = data.testCount ?? 'N/A';
+}
+
+// Display failure details in a separate block
+function displayFailureDetails(data) {
+    const failureInputElement = document.getElementById('failure-input');
+    const failureExpectedElement = document.getElementById('failure-expected');
+    const failureActualElement = document.getElementById('failure-actual');
+
+    failureInputElement.innerText = formatDataForDisplay(data.input);
+    failureExpectedElement.innerText = formatDataForDisplay(data.expected);
+    failureActualElement.innerText = data.output ?? '';
+}
+
+// Format data for display
+function formatDataForDisplay(data) {
+    if (!data && data !== 0) return '';
+    try {
+        const parsedData = JSON.parse(data);
+        return Object.entries(parsedData)
+            .map(([key, value]) => `${key} = ${value}`)
+            .join(', ');
+    } catch {
+        return String(data);
+    }
+}
+
+// Parse JSON to string for display
+function parseJsonToString(jsonData) {
+    try {
+        const parsedData = JSON.parse(jsonData);
+        return Object.entries(parsedData)
+            .map(([key, value]) => `${key} = ${value}`)
+            .join(', ');
+    } catch {
+        return jsonData || '';
+    }
+}
+
+function logError(message, error) {
+    console.error(`${message} ${error.message}`);
+}

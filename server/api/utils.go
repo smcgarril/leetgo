@@ -28,10 +28,9 @@ func GetWorkerURL() string {
 	return fmt.Sprintf("%s:%s%s", workerHost, workerPort, workerPath)
 }
 
-// Function to return input, expectedOutput, and actualOutput
+// Return input, expectedOutput, and actualOutput from CodeOutput
 func BuildResponse(codeOutput *CodeOutput, examples []ProblemExample) (input, expectedOutput, actualOutput string) {
 	if codeOutput.Result == "FAILED" {
-		fmt.Println("HERE")
 		lines := strings.Split(codeOutput.Output, "\n")
 		for _, line := range lines {
 			if strings.Contains(line, "./temp_code.go") {
@@ -55,7 +54,7 @@ func BuildResponse(codeOutput *CodeOutput, examples []ProblemExample) (input, ex
 	return input, expectedOutput, actualOutput
 }
 
-// Function to find Input and ExpectedOutput by ID
+// Return Input and ExpectedOutput by ID
 func getInputAndExpectedOutputByID(examples []ProblemExample, id int) (string, string) {
 	for _, example := range examples {
 		if example.ID == id {
@@ -65,7 +64,7 @@ func getInputAndExpectedOutputByID(examples []ProblemExample, id int) (string, s
 	return "", ""
 }
 
-// Helper function to retrieve the value provided after Output
+// Return value provided after Output
 func getOutputValue(line string) string {
 	prefix := "Output: "
 	startIndex := strings.Index(line, prefix)
@@ -78,7 +77,7 @@ func getOutputValue(line string) string {
 	return strings.TrimSpace(output)
 }
 
-// Helper function to retrieve error after code file & line numbers
+// Return error after code file & line numbers
 func getFailureError(line string) string {
 	re := regexp.MustCompile(`.*?:\d+:\d+: (.+)`)
 	match := re.FindStringSubmatch(line)
