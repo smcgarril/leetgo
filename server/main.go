@@ -41,7 +41,9 @@ func main() {
 	router := mux.NewRouter()
 
 	// API routes
-	router.HandleFunc("/problems", api.GetProblemsHandler(db)).Methods("GET")
+	router.HandleFunc("/problems", api.GetAllProblemsHandler(db)).Methods("GET")
+	router.HandleFunc("/problems/names", api.GetProblemNamesHandler(db)).Methods("GET")
+	router.HandleFunc("/problems/{id}", api.GetProblemDetailsHandler(db)).Methods("GET")
 	router.HandleFunc("/execute", api.ExecuteCodeHandler(db)).Methods("POST")
 	router.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./public"))))
 

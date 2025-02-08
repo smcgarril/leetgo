@@ -7,11 +7,11 @@ let currentProblem = null;
 
 document.addEventListener("DOMContentLoaded", init);
 
-// Initialize the editor and fetch problems
+// Initialize the editor and fetch the problem list
 function init() {
     initializeEditor();
     setupDarkMode();
-    fetchProblems();
+    fetchProblemList();
 }
 
 // Initialize CodeMirror editor
@@ -26,25 +26,25 @@ function initializeEditor() {
     seedEditor(initialCode);
 }
 
-// Seed editor with a welcome message or problem seed code
+// Seed editor with initial or problem seed code
 function seedEditor(data) {
     editor.setValue(data);
 }
 
-// Fetch problems from the backend
-async function fetchProblems() {
+// Fetch problem names and IDs from the backend
+async function fetchProblemList() {
     try {
-        const response = await fetch('/problems');
-        if (!response.ok) throw new Error("Failed to fetch problems");
+        const response = await fetch('/problems/names');
+        if (!response.ok) throw new Error("Failed to fetch problem list");
         
-        const problems = await response.json();
-        renderProblemsDropdown(problems);
+        const problemList = await response.json();
+        renderProblemsDropdown(problemList);
     } catch (error) {
-        logError('Error fetching problems:', error);
+        logError('Error fetching problem list:', error);
     }
 }
 
-// Render problems in a dropdown menu
+// Render the dropdown with problem names
 function renderProblemsDropdown(problems) {
     const problemsDiv = document.getElementById('problems');
     problemsDiv.innerHTML = '';
@@ -53,11 +53,11 @@ function renderProblemsDropdown(problems) {
     problemsDiv.appendChild(select);
 }
 
-// Create a dropdown for problem selection
+// Create a dropdown menu for problem selection
 function createDropdown(problems) {
     const select = document.createElement('select');
     select.id = 'problem-select';
-    select.onchange = () => handleProblemSelection(problems);
+    select.onchange = () => fetchProblemDetails(select.value);
 
     const defaultOption = document.createElement('option');
     defaultOption.value = '';
@@ -76,28 +76,42 @@ function createDropdown(problems) {
     return select;
 }
 
-// Handle problem selection and display description
-function handleProblemSelection(problems) {
-    const selectedProblemId = document.getElementById('problem-select').value;
-    currentProblem = problems.find(p => p.id === selectedProblemId);
+// Fetch full problem details when a user selects a problem
+async function fetchProblemDetails(problemId) {
+    if (!problemId) return;
 
-    const descriptionDiv = document.getElementById('problem-description');
-    if (currentProblem) {
-        descriptionDiv.innerHTML = `<h3>${currentProblem.name}</h3><p>${currentProblem.long_description}</p>`;
-        renderExamples(currentProblem.examples);
-        loadProblemSeed();
+    try {
+        const response = await fetch(`/problems/${problemId}`);
+        if (!response.ok) throw new Error("Failed to fetch problem details");
+        
+        const problem = await response.json();
+        currentProblem = problem[0];
+
+        displayProblemDetails(currentProblem);   
+        loadProblemSeed(currentProblem.problem_seed);
         clearResults();
+    } catch (error) {
+        logError('Error fetching problem details:', error);
+    }
+}
+
+// Display the selected problem's details and examples
+function displayProblemDetails(problem) {
+    const descriptionDiv = document.getElementById('problem-description');
+    if (problem) {
+        descriptionDiv.innerHTML = `<h3>${problem.name}</h3><p>${problem.long_description}</p>`;
+        renderExamples(problem.examples);
     } else {
         descriptionDiv.innerHTML = '';
     }
 }
 
-// Load the problem seed code into the editor
-function loadProblemSeed() {
-    if (currentProblem) seedEditor(currentProblem.problem_seed);
+// Load problem seed code into the editor
+function loadProblemSeed(seedCode) {
+    seedEditor(seedCode);
 }
 
-// Render problem examples
+// Render examples for the selected problem
 function renderExamples(examples) {
     const examplesDiv = document.getElementById('examples');
     examplesDiv.innerHTML = '';
@@ -136,7 +150,7 @@ function clearResults() {
     });
 }
 
-// Dark mode toggle setup
+// Set up dark mode toggle
 function setupDarkMode() {
     const darkModeToggle = document.getElementById('darkModeToggle');
     const darkModeIcon = document.getElementById('darkModeIcon');
