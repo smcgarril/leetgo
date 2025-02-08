@@ -3,15 +3,15 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
-// Helper function to transform JSON input to formatted arguments
+// Transform the input JSON into a formatted string based on the given key order.
 func FormatArgs(input string, keyOrder []string) (string, error) {
 	var args map[string]interface{}
-	err := json.Unmarshal([]byte(input), &args)
-	if err != nil {
-		return "", err
+	if err := json.Unmarshal([]byte(input), &args); err != nil {
+		return "", fmt.Errorf("failed to parse input JSON: %w", err)
 	}
 
 	var formattedArgs []string
@@ -20,94 +20,77 @@ func FormatArgs(input string, keyOrder []string) (string, error) {
 		if !exists {
 			return "", fmt.Errorf("missing key: %s", key)
 		}
-		switch v := value.(type) {
-		case float64:
-			// Check if the number is an integer
-			if v == float64(int(v)) {
-				formattedArgs = append(formattedArgs, fmt.Sprintf("%d", int(v)))
-			} else {
-				formattedArgs = append(formattedArgs, fmt.Sprintf("%g", v))
-			}
-		case string:
-			formattedArgs = append(formattedArgs, fmt.Sprintf("%q", v))
-		case bool:
-			formattedArgs = append(formattedArgs, fmt.Sprintf("%t", v))
-		case []interface{}:
-			formattedArray, err := FormatArray(v)
-			if err != nil {
-				return "", fmt.Errorf("error formatting array for key %s: %v", key, err)
-			}
-			formattedArgs = append(formattedArgs, formattedArray)
-		default:
-			return "", fmt.Errorf("unsupported type for key %s: %T", key, v)
+
+		formattedValue, err := formatValue(value)
+		if err != nil {
+			return "", fmt.Errorf("error formatting key %s: %v", key, err)
 		}
+		formattedArgs = append(formattedArgs, formattedValue)
 	}
+
 	return strings.Join(formattedArgs, ", "), nil
 }
 
-// Helper function to format JSON arrays
-func FormatArray(array []interface{}) (string, error) {
+// Format a single value based on its type.
+func formatValue(value interface{}) (string, error) {
+	switch v := value.(type) {
+	case float64:
+		// Return as integer if it has no fractional part.
+		if v == float64(int(v)) {
+			return strconv.Itoa(int(v)), nil
+		}
+		return fmt.Sprintf("%g", v), nil
+	case string:
+		return fmt.Sprintf("%q", v), nil
+	case bool:
+		return fmt.Sprintf("%t", v), nil
+	case []interface{}:
+		return formatArray(v)
+	default:
+		return "", fmt.Errorf("unsupported type: %T", v)
+	}
+}
+
+// Format an array into a string representation.
+func formatArray(array []interface{}) (string, error) {
 	var elements []string
-	isInt := true
+	isIntArray := true
 
 	for _, elem := range array {
-		switch v := elem.(type) {
-		case float64:
-			// Check if the number is an integer
-			if v == float64(int(v)) {
-				elements = append(elements, fmt.Sprintf("%d", int(v)))
-			} else {
-				isInt = false
-				elements = append(elements, fmt.Sprintf("%g", v))
-			}
-		case string:
-			isInt = false
-			elements = append(elements, fmt.Sprintf("%q", v))
-		case bool:
-			isInt = false
-			elements = append(elements, fmt.Sprintf("%t", v))
-		default:
-			return "", fmt.Errorf("unsupported array element type: %T", v)
+		formattedElem, err := formatValue(elem)
+		if err != nil {
+			return "", fmt.Errorf("unsupported array element type: %v", err)
+		}
+		elements = append(elements, formattedElem)
+
+		// Check if all elements are integers
+		if _, ok := elem.(float64); !ok || elem != float64(int(elem.(float64))) {
+			isIntArray = false
 		}
 	}
 
 	arrayType := "int"
-	if !isInt {
+	if !isIntArray {
 		arrayType = "float64"
 	}
 
 	return fmt.Sprintf("[]%s{%s}", arrayType, strings.Join(elements, ", ")), nil
 }
 
-// Helper function to transform JSON expected output
+// Transform the expected output JSON into a formatted string.
 func FormatExpectedOutput(output string) (string, error) {
 	var result map[string]interface{}
-	err := json.Unmarshal([]byte(output), &result)
-	if err != nil {
-		return "", err
+	if err := json.Unmarshal([]byte(output), &result); err != nil {
+		return "", fmt.Errorf("failed to parse expected output JSON: %w", err)
 	}
 
 	for _, value := range result {
-		switch v := value.(type) {
-		case float64:
-			if v == float64(int(v)) {
-				return fmt.Sprintf("%d", int(v)), nil
-			}
-			return fmt.Sprintf("%g", v), nil
-		case string:
-			return fmt.Sprintf("%q", v), nil
-		case bool:
-			return fmt.Sprintf("%t", v), nil
-		case []interface{}:
-			return FormatArray(v)
-		default:
-			return "", fmt.Errorf("unsupported type: %T", v)
-		}
+		return formatValue(value) // Return the formatted first value.
 	}
-	return "", nil
+	return "", fmt.Errorf("no value found in expected output")
 }
 
-// Helper function to count number of passing tests
+// Count the number of passing tests in the given output string.
 func CountPassingTests(output string) int {
 	testPassed := 0
 	lines := strings.Split(output, "\n")

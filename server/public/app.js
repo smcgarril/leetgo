@@ -137,8 +137,10 @@ const darkModeToggle = document.getElementById('darkModeToggle');
 const darkModeIcon = document.getElementById('darkModeIcon');
 
 darkModeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    
+    // document.body.classList.toggle('dark-mode');
+    const darkModeEnabled = document.body.classList.toggle("dark-mode");
+    localStorage.setItem("darkMode", darkModeEnabled);
+
     // Toggle between moon and sun icons
     if (document.body.classList.contains('dark-mode')) {
         darkModeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -273,6 +275,13 @@ fetchProblems();
 
 document.addEventListener("DOMContentLoaded", function () {
     fetchProblems();
+
+    const body = document.body;
+    const isDarkMode = localStorage.getItem("darkMode") === "true";
+    if (isDarkMode) {
+        body.classList.add("dark-mode");
+        darkModeIcon.classList.replace('fa-sun', 'fa-moon');
+    }
 
     // Initialize CodeMirror editor for the user to input code
     editor = CodeMirror(document.getElementById('editor'), {

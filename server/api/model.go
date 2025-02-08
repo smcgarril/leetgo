@@ -8,7 +8,7 @@ import (
 )
 
 // Fetch all problems
-func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+func GetAllProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	rows, err := db.Query(`
@@ -63,6 +63,7 @@ func GetProblems(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(problems)
 }
 
+// Fetch all examples for a given problem
 func GetProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) {
 	rows, err := db.Query(`
 		SELECT id, problem_id, input, input_order, expected_output 

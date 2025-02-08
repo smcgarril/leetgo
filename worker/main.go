@@ -21,6 +21,5 @@ func main() {
 	corsHandler := handlers.CORS(handlers.AllowedOrigins([]string{"*"}))(router)
 
 	fmt.Println("Worker service running on port 8081")
-
 	log.Fatal(http.ListenAndServe(":8081", corsHandler))
 }
