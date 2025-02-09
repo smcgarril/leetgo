@@ -25,7 +25,7 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("User submission: %+v", codeSubmission)
 
-	examples, err := GetProblemExamples(db, codeSubmission.ProblemID)
+	examples, err := GetProblemExamplesWrapper(db, codeSubmission.ProblemID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve problem examples")
 		log.Printf("Database error: %v", err)
@@ -35,7 +35,7 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	log.Printf("Retrieved problem examples: %+v", examples)
 	codeSubmission.ProblemExamples = examples
 
-	codeOutput, err := callWorkerService(codeSubmission)
+	codeOutput, err := callWorkerServiceWrapper(codeSubmission)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to execute code")
 		log.Printf("Worker service error: %v", err)
@@ -44,7 +44,7 @@ func ExecuteCode(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Worker response: %+v", codeOutput)
 
-	response := buildResponse(codeOutput, codeSubmission.ProblemExamples)
+	response := buildCodeOutput(codeOutput, codeSubmission.ProblemExamples)
 	respondWithJSON(w, http.StatusOK, response)
 }
 
@@ -56,6 +56,9 @@ func decodeRequest(r *http.Request, v interface{}) error {
 	}
 	return json.Unmarshal(bodyBytes, v)
 }
+
+// Wrapper function to get problem examples
+var callWorkerServiceWrapper func(codeSubmission CodeSubmission) (CodeOutput, error) = callWorkerService
 
 // Send a code submission to the worker service
 func callWorkerService(codeSubmission CodeSubmission) (CodeOutput, error) {
@@ -98,7 +101,7 @@ func callWorkerService(codeSubmission CodeSubmission) (CodeOutput, error) {
 }
 
 // Build a response string from the code output and problem examples
-func buildResponse(codeOutput CodeOutput, examples []ProblemExample) CodeOutput {
+func buildCodeOutput(codeOutput CodeOutput, examples []ProblemExample) CodeOutput {
 	input, expectedOutput, actualOutput := BuildResponse(&codeOutput, examples)
 	return CodeOutput{
 		TestCount:  codeOutput.TestCount,

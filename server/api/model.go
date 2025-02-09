@@ -167,6 +167,9 @@ func GetProblemDetails(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(problems)
 }
 
+// Wrapper function for GetProblemExamples
+var GetProblemExamplesWrapper func(db *sql.DB, problemID string) ([]ProblemExample, error) = GetProblemExamples
+
 // Fetch all examples for a given problem
 func GetProblemExamples(db *sql.DB, problemID string) ([]ProblemExample, error) {
 	rows, err := db.Query(`
