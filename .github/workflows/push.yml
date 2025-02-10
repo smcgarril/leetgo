@@ -37,7 +37,7 @@ jobs:
       - name: Run unit tests
         run: |
           cd ${{ matrix.component }}
-          go test ./...
+          go test -v ./...
 
       # - name: Run static code analysis (golangci-lint)
       #   run: |
