@@ -49,6 +49,7 @@ jobs:
         with:
           config: ./.testcoverage.yml
           profile: ${{ matrix.component }}/cover.out
+          local-prefix: "github.com/smcgarril/leetgo/${{ matrix.component }}"
 
       # - name: Run static code analysis (golangci-lint)
       #   run: |
