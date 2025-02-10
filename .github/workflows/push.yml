@@ -61,9 +61,9 @@ jobs:
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker tag $DOCKERHUB_REPO/${{ matrix.component }}:latest $DOCKERHUB_REPO/${{ matrix.component }}:${{ github.run_number }}
-          docker push $DOCKERHUB_REPO/${{ matrix.component }}:latest
-          docker push $DOCKERHUB_REPO/${{ matrix.component }}:${{ github.run_number }}
+          docker tag $DOCKERHUB_REPO-${{ matrix.component }}:latest $DOCKERHUB_REPO-${{ matrix.component }}:${{ github.run_number }}
+          docker push $DOCKERHUB_REPO-${{ matrix.component }}:latest
+          docker push $DOCKERHUB_REPO-${{ matrix.component }}:${{ github.run_number }}
 
   # deploy:
   #   needs: build-and-push
