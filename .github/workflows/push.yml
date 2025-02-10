@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - "*"
   pull_request:
     branches:
       - main
@@ -40,6 +40,7 @@ jobs:
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     strategy:
       matrix:
         component: [server, worker]
