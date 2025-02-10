@@ -30,6 +30,7 @@ jobs:
 
       - name: Set up Go Modules
         run: |
+          cd ${{ matrix.component }}
           go mod tidy
           go mod download
 
