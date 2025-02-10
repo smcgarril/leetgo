@@ -34,10 +34,20 @@ jobs:
           go mod tidy
           go mod download
 
-      - name: Run unit tests
+      # - name: Run unit tests
+      #   run: |
+      #     cd ${{ matrix.component }}
+      #     go test -v ./...
+
+      - name: generate test coverage
         run: |
           cd ${{ matrix.component }}
-          go test -v ./...
+          go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
+
+      - name: check test coverage
+        uses: vladopajic/go-test-coverage@v2
+        with:
+          config: ./.testcoverage.yml
 
       # - name: Run static code analysis (golangci-lint)
       #   run: |
