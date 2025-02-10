@@ -57,7 +57,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t $DOCKERHUB_REPO/${{ matrix.component }}:latest ${{ matrix.component }}
+          docker build -t $DOCKERHUB_REPO-${{ matrix.component }}:latest ${{ matrix.component }}
 
       - name: Push Docker image to Docker Hub
         run: |
