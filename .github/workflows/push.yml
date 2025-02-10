@@ -42,12 +42,13 @@ jobs:
       - name: generate test coverage
         run: |
           cd ${{ matrix.component }}
-          go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
+          go test -v ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
 
       - name: check test coverage
         uses: vladopajic/go-test-coverage@v2
         with:
           config: ./.testcoverage.yml
+          local-prefix: ${{ matrix.component }}
 
       # - name: Run static code analysis (golangci-lint)
       #   run: |
