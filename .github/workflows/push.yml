@@ -34,28 +34,28 @@ jobs:
           go mod tidy
           go mod download
 
-      # - name: Run unit tests
-      #   run: |
-      #     cd ${{ matrix.component }}
-      #     go test -v ./...
-
-      - name: generate test coverage
+      - name: Run unit tests
         run: |
           cd ${{ matrix.component }}
-          go test -v ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
+          go test -v ./...
 
-      - name: check test coverage
-        uses: vladopajic/go-test-coverage@v2
-        with:
-          config: ./.testcoverage.yml
-          profile: ${{ matrix.component }}/cover.out
-          local-prefix: "github.com/smcgarril/leetgo/${{ matrix.component }}"
-
-      # - name: Run static code analysis (golangci-lint)
+      # - name: generate test coverage
       #   run: |
-      #     curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.50.1
       #     cd ${{ matrix.component }}
-      #     golangci-lint run --timeout 5m
+      #     go test -v ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
+
+      # - name: check test coverage
+      #   uses: vladopajic/go-test-coverage@v2
+      #   with:
+      #     config: ./.testcoverage.yml
+      #     profile: ${{ matrix.component }}/cover.out
+      #     local-prefix: "github.com/smcgarril/leetgo/${{ matrix.component }}"
+
+      - name: Run static code analysis (golangci-lint)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOPATH/bin v1.50.1
+          cd ${{ matrix.component }}
+          golangci-lint run --timeout 5m
 
   # build-and-push:
   #   needs: test
