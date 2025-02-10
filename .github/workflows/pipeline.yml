@@ -1,60 +1,74 @@
-name: golang-pipeline
+name: CI/CD Pipeline
+
 on:
   push:
     branches:
+      - "*"
+  pull_request:
+    branches:
       - main
-    tags:
-      - 'v*'
+
+env:
+  DOCKERHUB_REPO: smcgarril/leetgo
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: [server, worker]
     steps:
-      - uses: actions/checkout@v2
-      - name: Run Unit Tests
-        run: go test
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-  deploy:
-    runs-on: ubuntu-latest
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+
+      - name: Set up Go Modules
+        run: |
+          cd ${{ matrix.component }}
+          go mod tidy
+          go mod download
+
+      - name: Run unit tests
+        run: |
+          cd ${{ matrix.component }}
+          go test -v ./...
+
+  build-and-push:
     needs: test
-    if: startsWith(github.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        component: [server, worker]
     steps:
-      - name: Extract Version
-        id: version_step
-        run: |
-          echo "##[set-output name=version;]VERSION=${GITHUB_REF#$"refs/tags/v"}"
-          echo "##[set-output name=version_tag;]$GITHUB_REPOSITORY:${GITHUB_REF#$"refs/tags/v"}"
-          echo "##[set-output name=latest_tag;]$GITHUB_REPOSITORY:latest"
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Print Version
-        run: |
-          echo ${{steps.version_step.outputs.version_tag}}
-          echo ${{steps.version_step.outputs.latest_tag}}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: PrepareReg Names
-        id: read-docker-image-identifiers
+      - name: Build Docker image
         run: |
-          echo VERSION_TAG=$(echo ${{ steps.version_step.outputs.version_tag }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-          echo LASTEST_TAG=$(echo ${{ steps.version_step.outputs.latest_tag  }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-          
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: |
-            ${{env.VERSION_TAG}}
-            ${{env.LASTEST_TAG}}
-          build-args: |
-            ${{steps.version_step.outputs.version}}
+          docker build -t $DOCKERHUB_REPO-${{ matrix.component }}:latest ${{ matrix.component }}
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker tag $DOCKERHUB_REPO-${{ matrix.component }}:latest $DOCKERHUB_REPO-${{ matrix.component }}:${{ github.run_number }}
+          docker push $DOCKERHUB_REPO-${{ matrix.component }}:latest
+          docker push $DOCKERHUB_REPO-${{ matrix.component }}:${{ github.run_number }}
+
+  # deploy:
+  #   needs: build-and-push
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to Fly.io
+  #       run: |
+  #         flyctl auth docker
+  #         flyctl deploy --image $DOCKERHUB_REPO/server:${{ github.run_number }} --app your-fly-app-name
