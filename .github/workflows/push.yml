@@ -48,7 +48,7 @@ jobs:
         uses: vladopajic/go-test-coverage@v2
         with:
           config: ./.testcoverage.yml
-          local-prefix: ${{ matrix.component }}
+          profile: ${{ matrix.component }}
 
       # - name: Run static code analysis (golangci-lint)
       #   run: |
