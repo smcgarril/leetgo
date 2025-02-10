@@ -53,8 +53,61 @@ func TestGetAllProblems(t *testing.T) {
 
 			GetAllProblems(db, rec, req)
 
-			equals(t, rec.Code, tt.expectedCode)
-			equals(t, strings.TrimSpace(rec.Body.String()), tt.expectedBody)
+			equals(t, tt.expectedCode, rec.Code)
+			equals(t, tt.expectedBody, strings.TrimSpace(rec.Body.String()))
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("Unfulfilled expectations: %v", err)
+			}
+		})
+	}
+}
+
+func TestGetProblemNames(t *testing.T) {
+	tests := []struct {
+		name         string
+		mockSetup    func(mock sqlmock.Sqlmock)
+		expectedCode int
+		expectedBody string
+	}{
+		{
+			name: "SuccessfulFetch",
+			mockSetup: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"id", "name"}).
+					AddRow("1", "Problem 1").
+					AddRow("2", "Problem 2")
+				mock.ExpectQuery("^SELECT id, name FROM problems$").WillReturnRows(rows)
+			},
+			expectedCode: http.StatusOK,
+			expectedBody: `[{"id":"1","name":"Problem 1","short_description":"","long_description":"","difficulty":"","problem_seed":"","examples":"","attempts":"","solves":""},{"id":"2","name":"Problem 2","short_description":"","long_description":"","difficulty":"","problem_seed":"","examples":"","attempts":"","solves":""}]`,
+		},
+		{
+			name: "DatabaseQueryError",
+			mockSetup: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("^SELECT id, name FROM problems$").WillReturnError(errors.New("query error"))
+			},
+			expectedCode: http.StatusInternalServerError,
+			expectedBody: "Error fetching problems from database",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("Failed to create mock database: %v", err)
+			}
+			defer db.Close()
+
+			tt.mockSetup(mock)
+
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/problems/names", nil)
+
+			GetProblemNames(db, rec, req)
+
+			equals(t, tt.expectedCode, rec.Code)
+			equals(t, tt.expectedBody, strings.TrimSpace(rec.Body.String()))
 
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Errorf("Unfulfilled expectations: %v", err)
