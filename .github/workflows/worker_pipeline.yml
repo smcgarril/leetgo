@@ -1,22 +1,25 @@
-name: CI/CD Pipeline
+name: Worker Pipeline
 
 on:
   push:
+    paths:
+      - "worker/**"
     branches:
       - "*"
   pull_request:
+    paths:
+      - "worker/**"
     branches:
       - main
 
 env:
+  COMPONENT: worker
   DOCKERHUB_REPO: smcgarril/leetgo
+  VERSION: 1.1.0
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        component: [server, worker]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -28,22 +31,19 @@ jobs:
 
       - name: Set up Go Modules
         run: |
-          cd ${{ matrix.component }}
+          cd $COMPONENT
           go mod tidy
           go mod download
 
       - name: Run unit tests
         run: |
-          cd ${{ matrix.component }}
+          cd $COMPONENT
           go test -v ./...
 
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    strategy:
-      matrix:
-        component: [server, worker]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -56,13 +56,13 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t $DOCKERHUB_REPO-${{ matrix.component }}:latest ${{ matrix.component }}
+          docker build -t $DOCKERHUB_REPO-$COMPONENT:$VERSION $COMPONENT
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker tag $DOCKERHUB_REPO-${{ matrix.component }}:latest $DOCKERHUB_REPO-${{ matrix.component }}:${{ github.run_number }}
-          docker push $DOCKERHUB_REPO-${{ matrix.component }}:latest
-          docker push $DOCKERHUB_REPO-${{ matrix.component }}:${{ github.run_number }}
+          docker tag $DOCKERHUB_REPO-$COMPONENT:latest $DOCKERHUB_REPO-$COMPONENT:$VERSION
+          docker push $DOCKERHUB_REPO-$COMPONENT:latest
+          docker push $DOCKERHUB_REPO-$COMPONENT:$VERSION
 
   # deploy:
   #   needs: build-and-push
@@ -71,4 +71,4 @@ jobs:
   #     - name: Deploy to Fly.io
   #       run: |
   #         flyctl auth docker
-  #         flyctl deploy --image $DOCKERHUB_REPO/server:${{ github.run_number }} --app your-fly-app-name
+  #         flyctl deploy --image $DOCKERHUB_REPO-$COMPONENT:$VERSION --app your-fly-app-name

@@ -29,13 +29,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Seed database and test query
 	log.Printf("Successfully connected to SQLite database!")
 	log.Printf("Seeding database file...")
-
 	api.SeedFiles(db)
 
 	log.Printf("Testing database query...")
-
 	api.QueryProblems(db)
 
 	router := mux.NewRouter()

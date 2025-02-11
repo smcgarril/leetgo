@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	// Create a new router using gorilla/mux
 	router := mux.NewRouter()
 
 	// API routes
