@@ -1,0 +1,73 @@
+name: Server Pipeline
+
+on:
+  push:
+    paths:
+      - "server/**"
+    branches:
+      - "*"
+  pull_request:
+    paths:
+      - "server/**"
+    branches:
+      - main
+
+env:
+  DOCKERHUB_REPO: smcgarril/leetgo
+  COMPONENT: server
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22
+
+      - name: Set up Go Modules
+        run: |
+          cd $COMPONENT
+          go mod tidy
+          go mod download
+
+      - name: Run unit tests
+        run: |
+          cd $COMPONENT
+          go test -v ./...
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t $DOCKERHUB_REPO-$COMPONENT:latest $COMPONENT
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker tag $DOCKERHUB_REPO-$COMPONENT:latest $DOCKERHUB_REPO-$COMPONENT:${{ github.run_number }}
+          docker push $DOCKERHUB_REPO-$COMPONENT:latest
+          docker push $DOCKERHUB_REPO-$COMPONENT:${{ github.run_number }}
+
+  # deploy:
+  #   needs: build-and-push
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy to Fly.io
+  #       run: |
+  #         flyctl auth docker
+  #         flyctl deploy --image $DOCKERHUB_REPO/server:${{ github.run_number }} --app your-fly-app-name
