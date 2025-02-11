@@ -37,6 +37,7 @@ func main() {
 	log.Printf("Testing database query...")
 	api.QueryProblems(db)
 
+	// Create router
 	router := mux.NewRouter()
 
 	// API routes

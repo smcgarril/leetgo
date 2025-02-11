@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	// Create router
 	router := mux.NewRouter()
 
 	// API routes
