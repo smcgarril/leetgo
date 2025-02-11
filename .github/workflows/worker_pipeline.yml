@@ -13,8 +13,9 @@ on:
       - main
 
 env:
-  DOCKERHUB_REPO: smcgarril/leetgo
   COMPONENT: worker
+  DOCKERHUB_REPO: smcgarril/leetgo
+  VERSION: 1.1.0
 
 jobs:
   test:
@@ -55,13 +56,13 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t $DOCKERHUB_REPO-$COMPONENT:latest $COMPONENT
+          docker build -t $DOCKERHUB_REPO-$COMPONENT:$VERSION $COMPONENT
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker tag $DOCKERHUB_REPO-$COMPONENT:latest $DOCKERHUB_REPO-$COMPONENT:${{ github.run_number }}
+          docker tag $DOCKERHUB_REPO-$COMPONENT:latest $DOCKERHUB_REPO-$COMPONENT:$VERSION
           docker push $DOCKERHUB_REPO-$COMPONENT:latest
-          docker push $DOCKERHUB_REPO-$COMPONENT:${{ github.run_number }}
+          docker push $DOCKERHUB_REPO-$COMPONENT:$VERSION
 
   # deploy:
   #   needs: build-and-push
@@ -70,4 +71,4 @@ jobs:
   #     - name: Deploy to Fly.io
   #       run: |
   #         flyctl auth docker
-  #         flyctl deploy --image $DOCKERHUB_REPO/server:${{ github.run_number }} --app your-fly-app-name
+  #         flyctl deploy --image $DOCKERHUB_REPO-$COMPONENT:$VERSION --app your-fly-app-name
