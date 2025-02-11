@@ -23,5 +23,3 @@ func main() {
 	fmt.Println("Worker service running on port 8081")
 	log.Fatal(http.ListenAndServe(":8081", corsHandler))
 }
-
-// Test worker
